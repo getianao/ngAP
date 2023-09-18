@@ -1,0 +1,7 @@
+config,smallSnort,smallFileCarving,smallClamAV
+o0-blocking_,20.6698,-1.0,3.44144
+o0-nonblocking-NAP_,20.759,-1.0,3.09138
+o1-nonblocking_,39.1118,-1.0,6.37317
+o3-nonblocking-p3_,51.7606,-1.0,1804.14
+o4-nonblocking-r1f_,51.4143,-1.0,3.68474
+oa-nonblocking-all-p3r1f_,108.504,-1.0,2083.47

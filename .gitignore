@@ -1,0 +1,16 @@
+*.o
+*.pyc
+code/build
+code/log
+code/results
+.vscode
+raw_results/*
+results/*
+exp_table3/*
+characterize/*
+froniter_length*/*
+execution_path*/*
+scripts/__pycache__/*
+automata_benchmark_original/*
+automata_benchmark.tar.gz
+code/src/asyncap/bin/*

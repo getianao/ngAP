@@ -1,0 +1,24 @@
+<anml version="1.0"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <automata-network id="temp">
+    <state-transition-element id="__41__" symbol-set="[a]" start="all-input">
+      <activate-on-match element="__42__"/>
+    </state-transition-element>
+
+    <state-transition-element id="__42__" symbol-set="[p]">
+      <activate-on-match element="__43__"/>
+    </state-transition-element>
+
+    <state-transition-element id="__43__" symbol-set="[p]">
+      <activate-on-match element="__44__"/>
+    </state-transition-element>
+
+    <state-transition-element id="__44__" symbol-set="[l]">
+      <activate-on-match element="__45__"/>
+    </state-transition-element>
+
+    <state-transition-element id="__45__" symbol-set="[e]">
+       <report-on-match reportcode="2019"/>
+    </state-transition-element>
+
+  </automata-network>
+</anml>

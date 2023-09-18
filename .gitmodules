@@ -1,0 +1,3 @@
+[submodule "hscompile"]
+	path = hscompile
+	url = https://github.com/getianao/hscompile.git

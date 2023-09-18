@@ -1,0 +1,32 @@
+{
+    "exp_parameters" : {
+        "before-runahead-cc4" : [
+            ("exec", 'asyncap', 'nocombination'),
+            ("output-name", "before-runahead-cc4_", 'nocombination'),
+            ("algorithm", ["runahead"]),
+            ("input-len", ["1000000"]),
+            ("report-off", ['true']),
+            ("duplicate-input-stream", ['600']),
+            ("one-output-capacity", ['104619400']),
+            ("scanning-R", ['999999999']),
+            ("block-size", ['128']),
+            ("record-ir", ['0']),
+            ("blockDimX", ['-1']),
+            ("num-streams", ['4']),
+            ("merge-cc", ['4']),
+            ("shrmem-wl", ['1']),
+            ("shr_wl_len", ['4']),
+            ("remove-degree", ['false']),
+            ("quit-degree", ['false']),
+        ],
+
+    },
+
+    'exp_times'    : 1,
+    'out_prefix'   : 'output',
+    'input_suffix' : '1MB'
+}
+
+
+
+

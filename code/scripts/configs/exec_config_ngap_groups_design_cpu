@@ -1,0 +1,15 @@
+{
+    "exp_parameters" : {
+        "before-hyperscan" : [
+            ("exec", 'hsrun', 'nocombination'),
+            ("output-name", "before-hyperscan_", 'nocombination'),
+            ("t", ["12"]),
+            ("i", ["1000000"]),
+            ("d", ["600"]),
+        ],
+    },
+    "exp_times"    : 1,
+    "out_prefix"   : "output",
+    "input_suffix" : "1MB",
+    "exclude_configs" : ["o1-nonblocking-aas", "o1-nonblocking-unique"],
+}

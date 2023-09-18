@@ -1,0 +1,3 @@
+config,smallSnort,smallFileCarving,smallClamAV
+before-hotstart-nt_,17.583161,-1.0,3.654265
+before-nfacg_,-1.0,-1.0,-1.0

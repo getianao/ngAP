@@ -1,0 +1,2 @@
+config,Brill,EntityResolution,Dotstar,PowerEN,CRISPR_CasOFFinder,CRISPR_CasOT,RandomForest_20_400_200,RandomForest_20_400_270,RandomForest_20_800_200,Hamming_N1000_l18_d3,Hamming_N1000_l22_d5,Hamming_N1000_l31_d10,Levenshtein_l19d3,Levenshtein_l24d5,Levenshtein_l37d10,Protomata,APPRNG4,SeqMatch_BIBLE_w6_p6,SeqMatch_BIBLE_w6_p10,Fermi,YARA,Bro217,ExactMath,Ranges05,Ranges1,TCP
+before-hyperscan_,1.19,1.6,71.91,84.03,0.32,0.16,0.4,-1.0,-1.0,0.04,-1.0,-1.0,0.02,-1.0,-1.0,1.85,0.03,2.89,-1.0,-1.0,61.31,285.88,1177.86,195.16,138.93,57.65

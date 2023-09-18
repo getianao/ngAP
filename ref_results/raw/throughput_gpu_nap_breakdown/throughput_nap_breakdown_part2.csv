@@ -1,0 +1,8 @@
+config,Snort,FileCarving,ClamAV
+o0-blocking_,21.1791,-1.0,3.40173
+o0-nonblocking-NAP_,20.5721,-1.0,3.04677
+o1-nonblocking_,39.1882,-1.0,6.36849
+o3-nonblocking-p3_,52.1036,-1.0,1813.44
+o4-nonblocking-r1f_,51.2799,-1.0,3.68003
+oa-nonblocking-all-p3r1_,-1.0,-1.0,1811.11
+oa-nonblocking-all-p3r1f_,109.975,-1.0,2106.51

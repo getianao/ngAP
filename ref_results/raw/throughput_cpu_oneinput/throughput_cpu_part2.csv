@@ -1,0 +1,2 @@
+config,Snort,FileCarving,ClamAV
+before-hyperscan_,31.54,-1.0,262.67
