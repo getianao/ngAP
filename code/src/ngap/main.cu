@@ -99,6 +99,9 @@ int main(int argc, char *argv[]) {
           ss.slice(start_pos1, split_entire_inputstream_to_chunk_size);
       pl.add_symbol_stream(ss_seg);
     }
+  } else {
+    pl.add_symbol_stream(ss);
+    pl.num_seg = 1;
   }
 
   pl.set_nfa_group(gs);
