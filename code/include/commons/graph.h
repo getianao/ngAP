@@ -171,19 +171,25 @@ public:
   }
 
   void moveToDevice() {
-    CHECK_ERROR(cudaMalloc((void **)&d_column_indices, sizeof(int) * edgesNum));
+    if (edgesNum > 0) {
+      CHECK_ERROR(
+          cudaMalloc((void **)&d_column_indices, sizeof(int) * edgesNum));
+      CHECK_ERROR(cudaMemcpy((void *)d_column_indices, h_column_indices,
+                             sizeof(int) * edgesNum, cudaMemcpyHostToDevice));
+    }
     CHECK_ERROR(
         cudaMalloc((void **)&d_row_offsets, sizeof(int) * (nodesNum + 1)));
-    CHECK_ERROR(cudaMemcpy((void *)d_column_indices, h_column_indices,
-                           sizeof(int) * edgesNum, cudaMemcpyHostToDevice));
     CHECK_ERROR(cudaMemcpy((void *)d_row_offsets, h_row_offsets,
                            sizeof(int) * (nodesNum + 1),
                            cudaMemcpyHostToDevice));
   }
 
   void fromCoo(Edge *eps) {
-    if (edgesNum <= 0)
+    if (edgesNum <= 0) {
+      h_row_offsets = new int[nodesNum + 1];
+      memset(h_row_offsets, 0, sizeof(int) * (nodesNum + 1));
       return;
+    }
     auto compareEdge = [](Edge a, Edge b) -> bool {
       if (a.x == b.x)
         return a.y < b.y;
