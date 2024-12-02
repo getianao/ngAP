@@ -4,8 +4,8 @@
 #ifeq ($(CXXFLAGS),)
 CC = g++
 AR = ar
-NVCC=/usr/local/cuda/bin/nvcc
-SM=sm_80
+NVCC=nvcc
+SM=sm_86
 
 # -I../mnrl/include
 CXXFLAGS= -std=c++14 -O3 -Iinclude -I../../include  -I../../include/commons -I../../include/pugixml -I../../include/gpunfautils -w
