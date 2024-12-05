@@ -14,6 +14,7 @@
 #include <execution>
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 // #define DEBUG_AM
 bool compareResult(uint64_t r1, uint64_t r2) {
@@ -497,7 +498,7 @@ void ngap::launch_non_blocking_nap_groups() {
     }
   }
 
-  nblb.release(true);
+  nblb.release(plo, true);
   csr.release();
   csr.releaseDevice();
   ms.release();
@@ -739,7 +740,7 @@ void ngap::launch_non_blocking_groups() {
     }
   }
 
-  nblb.release(true);
+  nblb.release(plo, true);
   csr.release();
   csr.releaseDevice();
   ms.release();
@@ -1096,7 +1097,7 @@ void ngap::launch_non_blocking_prec_groups() {
     }
   }
 
-  nblb.release(true);
+  nblb.release(plo, true);
   csr.release();
   csr.releaseDevice();
   ms_aos.release();
@@ -1279,7 +1280,7 @@ void ngap::launch_non_blocking_r1_groups() {
     }
   }
 
-  nblb.release(true);
+  nblb.release(plo, true);
   csr.release();
   csr.releaseDevice();
   ms.release();
@@ -1460,7 +1461,7 @@ void ngap::launch_non_blocking_r2_groups() {
     }
   }
 
-  nblb.release(true);
+  nblb.release(plo, true);
   csr.release();
   csr.releaseDevice();
   ms.release();
@@ -1681,10 +1682,58 @@ void ngap::launch_non_blocking_all_groups() {
                     gaas, gcsr);
             break;
           case 3:
-            advanceAndFilterNonBlockingAllGroups<false, 3, false, true>
-                <<<blocksPerGrid, threadsPerBlock>>>(
-                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
-                    gaas, gcsr);
+            if (plo->remove_self_loop) {
+              printf("plo->group_num=%d, num_seg=%d\n", plo->group_num,
+                     num_seg);
+              nblb.disable_always_active = false;
+              advanceAndFilterNonBlockingAllGroups<false, 3, false, true>
+                  <<<blocksPerGrid, threadsPerBlock>>>(
+                      nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                      gaas, gcsr, true);
+              cudaDeviceSynchronize();
+
+              CHECK_ERROR(cudaMemset((void *)nblb.d_buffer_start, 0,
+                                     sizeof(uint) * plo->group_num * num_seg));
+              nblb.d_buffer_end = nblb.d_buffer_end_removed_state;
+
+              CHECK_ERROR(cudaMemcpy((void *)nblb.d_buffer_end_tmp,
+                                     nblb.d_buffer_end,
+                                     sizeof(uint) * plo->group_num * num_seg,
+                                     cudaMemcpyDeviceToDevice));
+              CHECK_ERROR(cudaMemset((void *)nblb.d_fakeiter_size2, 0,
+                                     sizeof(int) * plo->group_num * num_seg));
+
+  
+              CHECK_ERROR(
+                  cudaMemcpy((void *)nblb.d_buffer, nblb.d_buffer_removed_state,
+                             sizeof(uint) * nblb.buffer_capacity_removed_state,
+                             cudaMemcpyDeviceToDevice));
+              CHECK_ERROR(cudaMemcpy(
+                  (void *)nblb.d_buffer2, nblb.d_buffer2_removed_state,
+                  sizeof(uint) * nblb.buffer_capacity_removed_state,
+                  cudaMemcpyDeviceToDevice));
+              CHECK_ERROR(cudaMemcpy(
+                  (void *)nblb.d_buffer_idx, nblb.d_buffer_idx_removed_state,
+                  sizeof(uint) * nblb.buffer_capacity_removed_state,
+                  cudaMemcpyDeviceToDevice));
+              CHECK_ERROR(cudaMemcpy(
+                  (void *)nblb.d_buffer_idx2, nblb.d_buffer_idx2_removed_state,
+                  sizeof(uint) * nblb.buffer_capacity_removed_state,
+                  cudaMemcpyDeviceToDevice));
+              nblb.disable_always_active = true;
+
+              printf("@@@@@@@@@@@@@@@@@@@@@\n");
+
+              advanceAndFilterNonBlockingAllGroups<false, 3, false, true>
+                  <<<blocksPerGrid, threadsPerBlock>>>(
+                      nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                      gaas, gcsr, false);
+            } else {
+              advanceAndFilterNonBlockingAllGroups<false, 3, false, true>
+                  <<<blocksPerGrid, threadsPerBlock>>>(
+                      nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                      gaas, gcsr, false);
+            }
             break;
           default:
             break;
@@ -1840,6 +1889,20 @@ void ngap::launch_non_blocking_all_groups() {
                            sizeof(unsigned long long int),
                            cudaMemcpyDeviceToHost));
     std::cout << "Results number: " << *h_results_size << std::endl;
+
+    if (plo->remove_self_loop) {
+      uint *h_buffer_end_removed_state = new uint[num_seg];
+      uint buffer_total_size_removed_state = 0;
+      CHECK_ERROR(cudaMemcpy((void *)h_buffer_end_removed_state,
+                             nblb.d_buffer_end_removed_state,
+                             sizeof(uint) * num_seg, cudaMemcpyDeviceToHost));
+      for (int i = 0; i < num_seg; i++) {
+        buffer_total_size_removed_state += h_buffer_end_removed_state[i];
+      }
+      printf("buffer_total_size_removed_state: %u \n",
+             buffer_total_size_removed_state);
+    }
+
     if (plo->motivate_worklist_length) {
       int *h_froniter_end = new int;
       CHECK_ERROR(cudaMemcpy((void *)h_froniter_end, nblb.d_froniter_end,
@@ -2059,14 +2122,14 @@ void ngap::launch_non_blocking_all_groups() {
     if (!passValidation && plo->try_adaptive_aas) {
       plo->adaptive_aas = true;
       printf("Try adaptive aas\n");
-      nblb.release(true);
+      nblb.release(plo, true);
       nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
                           multi_ss_size, gs, plo);
       startNonBlockAutomata(passValidation);
     }
   }
 
-  nblb.release(true);
+  nblb.release(plo, true);
   csr.release();
   csr.releaseDevice();
   ms.release();

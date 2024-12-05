@@ -66,6 +66,8 @@ public:
 	string report_code;
 	bool report_eod = false; 
 
+	bool segmented_start = false;
+
 
 	bool visited = false;
 

@@ -1,5 +1,5 @@
 {
-    "root": "/ngAP/automata_benchmark_original",
+    "root": "/home/tge/workspace/ngAP/automata_benchmark_original",
     "apps": [
         {
             "name": "Brill",
@@ -282,5 +282,20 @@
         "Fermi",
         "FileCarving",
         "smallFileCarving",
+        # Remove no self-loop apps
+        "CRISPR_CasOFFinder",
+        "CRISPR_CasOT",
+        "RandomForest_20_400_200",
+        "RandomForest_20_400_270",
+        "RandomForest_20_800_200",
+        "Hamming_N1000_l18_d3",
+        "Hamming_N1000_l22_d5",
+        "Hamming_N1000_l31_d10",
+        "Levenshtein_l19d3",
+        "Levenshtein_l24d5",
+        "Levenshtein_l37d10",
+        "Protomata",
+        "APPRNG4",
+        "Fermi",
     ],
 }

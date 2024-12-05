@@ -44,7 +44,9 @@ public:
         Opt(try_adaptive_aas, "true/false")["--try-adaptive-aas"](
             "retry when adaptive strategy  failed") |
         Opt(compress_prec_table, "true/false")["--compress-prec-table"](
-            "compress memiozation tables");
+            "compress memiozation tables") |
+        Opt(remove_self_loop, "true/false")["--remove-self-loop"](
+            "remove self loop");
             
     parser = parser | additional_parser;
   }
@@ -62,6 +64,7 @@ public:
   int num_state_per_group;
   int group_num = 10;
   bool compress_prec_table = true;
+  bool remove_self_loop = false;
   bool tuning = false;
   bool pc_use_uvm = false;
   bool adaptive_aas = false;
