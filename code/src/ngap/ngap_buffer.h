@@ -26,15 +26,11 @@
 
 #ifndef DATA_BUFFER_SIZE
 // #define DATA_BUFFER_SIZE 300000000         // 1.2GB
-#define DATA_BUFFER_SIZE 500000000LL   // 4GB 80000000LL
+#define DATA_BUFFER_SIZE 1000000000LL // 4GB 80000000LL
 #endif
 
 #ifndef DATA_BUFFER_SIZE_FRONTIER
 #define DATA_BUFFER_SIZE_FRONTIER 2000000000
-#endif
-
-#ifndef DATA_BUFFER_SIZE_FRONTIER_REMOVED_STATE
-#define DATA_BUFFER_SIZE_FRONTIER_REMOVED_STATE 500000000LL  //80000000LL
 #endif
 
 #ifndef RESULTS_SIZE
@@ -93,9 +89,6 @@ public:
   long long int buffer_capacity;
   long long int buffer_capacity_per_block;
 
-  long long int buffer_capacity_removed_state;
-  long long int buffer_capacity_per_block_removed_state;
-
   unsigned long long int results_capacity;
   int data_buffer_fetch_size = 64;
 
@@ -112,11 +105,6 @@ public:
   int *d_buffer2;
   int *d_buffer_idx2;
 
-  int *d_buffer_removed_state;
-  int *d_buffer2_removed_state;
-  int *d_buffer_idx_removed_state;
-  int *d_buffer_idx2_removed_state;
-
   bool disable_always_active = false;
 
 
@@ -127,8 +115,6 @@ public:
   uint *d_buffer_start;
   uint *d_buffer_end;
   uint *d_buffer_end_tmp;
-
-  uint *d_buffer_end_removed_state;
 
   uint64_t *d_results;
   uint32_t *d_results_v;
