@@ -52,6 +52,6 @@ template <bool unique, int precompute_depth, bool record_fs, bool adaptive_aas>
 __global__ void advanceAndFilterNonBlockingAllGroups(
     NonBlockingBuffer nblb, uint8_t *arr_input_streams,
     int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,
-    GroupAAS gaas, GroupCsr gcsr, bool removed_state = false);
+    GroupAAS gaas, GroupCsr gcsr);
 
 #endif

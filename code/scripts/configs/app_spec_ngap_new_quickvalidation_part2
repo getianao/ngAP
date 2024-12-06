@@ -1,5 +1,5 @@
 {
-    "root": "/home/tge/workspace/ngAP/automata_benchmark_original",
+    "root": "/ngAP/automata_benchmark_original",
     "apps": [
         {
             "name": "Snort",

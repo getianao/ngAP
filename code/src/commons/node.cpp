@@ -44,7 +44,6 @@ Node::Node() {
 	this->original_id = "undefined";
 
 	report = false;
-	segmented_start = false;
 
 	complete = false;
 	complement = false;
