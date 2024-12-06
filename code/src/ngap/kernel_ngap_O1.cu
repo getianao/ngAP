@@ -13,7 +13,7 @@ advanceAndFilterNonBlockingGroups(NonBlockingBuffer nblb,
                                   GroupNodeAttrs gna, GroupAAS gaas,
                                   GroupCsr gcsr) {
 
-  Matchset symbol_set = gms.groups_ms[blockIdx.x];
+  MatchsetUnique symbol_set = gms.groups_ms[blockIdx.x];
   uint8_t *node_attrs = gna.groups_node_attrs[blockIdx.x];
   int *always_active_nodes = gaas.groups_always_active_states[blockIdx.x];
   Csr csr = gcsr.groups_csr[blockIdx.x];

@@ -29,6 +29,30 @@ struct Matchset {
   }
 };
 
+struct MatchsetUnique {
+  bool use_soa = false;
+  uint32_t *d_data = NULL;
+  int sizeofdata = 0; // 8 bytes for 256
+  int size = 0;
+  int *matchsetidx;
+
+  void release() { cudaFree((void *)d_data); }
+
+  __device__ inline bool test(int vertex, int symbol) {
+    if (use_soa) {
+      // printf("Not implemented\n");
+      // exit(1);
+      return *(d_data + symbol * sizeofdata + (vertex / 32)) &
+             (1 << (vertex % 32));
+    } else {
+      // printf("vertex: %d, symbolset_id: %d\n", vertex, matchsetidx[vertex]);
+      vertex = matchsetidx[vertex]; // get the real index
+      return *(d_data + vertex * sizeofdata + (symbol / 32)) &
+             (1 << (symbol % 32));
+    }
+  }
+};
+
 template <typename T1, typename ArrayT, typename SizeT, typename LessOp>
 __forceinline__ SizeT BinarySearch_LeftMost(const T1 &element_to_find,
                                             const ArrayT &elements,
@@ -116,6 +140,9 @@ public:
   int reportingStateNum = 0;
   int input_length = 0;
 
+  Array2<My_bitset256> *symbol_sets_unique;
+  Array2<int> *node2matchsetidx;
+
   cudaError_t ReadANML(std::string filename);
   cudaError_t ReadNFA(NFA *nfa);
   cudaError_t allocate(int nodesNum, int edgesNum, int alwaysActiveNum,
@@ -123,6 +150,7 @@ public:
   cudaError_t release();
   cudaError_t copyToDevice();
   Matchset get_matchset_device(bool is_soa);
+  MatchsetUnique get_matchset_unique_device(int matchset_unique_num, bool use_soa);
 };
 
 class Csr {

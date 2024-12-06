@@ -166,8 +166,27 @@ cudaError_t Graph::ReadANML(std::string filename) {
   return retval;
 }
 
+struct BitsetHash {
+  std::size_t operator()(const std::bitset<256> &bs) const {
+    return std::hash<std::string>()(bs.to_string());
+  }
+};
+struct BitsetEqual {
+  bool operator()(const std::bitset<256> &lhs,
+                  const std::bitset<256> &rhs) const {
+    return lhs == rhs;
+  }
+};
+
+bool valueComparator(const std::pair<std::bitset<256>, int> &a,
+                     const std::pair<std::bitset<256>, int> &b) {
+  return a.second > b.second;
+}
+
 cudaError_t Graph::ReadNFA(NFA *nfa) {
   cudaError_t retval = cudaSuccess;
+  std::unordered_map<std::bitset<256>, int, BitsetHash, BitsetEqual> symbol_table_map;
+
   // Allocate coo graph
   nodesNum = nfa->size();
   edgesNum =  nfa->edge_size();
@@ -182,6 +201,13 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
 
   for (int i = 0; i < nfa->size(); i++) {
     Node *node = nfa->get_node_by_int_id(i);
+
+    if (symbol_table_map.find(node->symbol_set) == symbol_table_map.end()) {
+      symbol_table_map[node->symbol_set] = 1;
+    } else {
+      symbol_table_map[node->symbol_set]++;
+    }
+
     symbol_sets->get_host()[i].fromBitset(node->symbol_set);
     // TODO(tge):useless
     if (node->is_start_always_enabled()) {
@@ -201,6 +227,44 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
           nfa->get_node_by_str_id(nfa->adj[node->str_id][j])->sid;
       edgeIndex++;
     }
+  }
+
+  std::vector<std::pair<std::bitset<256>, int>> symbol_table_map_sorted(
+      symbol_table_map.begin(), symbol_table_map.end());
+  std::sort(symbol_table_map_sorted.begin(), symbol_table_map_sorted.end(),
+            valueComparator);
+  std::cout << "Sorted symbol_table_map by value (descending):" << std::endl;
+  for (int i = 0; i < symbol_table_map_sorted.size(); i++) {
+    std::pair<std::bitset<256>, int> pair = symbol_table_map_sorted[i];
+    std::cout << "symbol_table_id: " << i
+              << " symbol_table bit number: " << pair.first.count()
+              << ", number: " << pair.second << std::endl;
+  }
+
+  auto get_symbol_set_idx = [&](std::bitset<256> symbol_set) {
+    for (int i = 0; i < symbol_table_map_sorted.size(); i++) {
+      if (symbol_table_map_sorted[i].first == symbol_set) {
+        return i;
+      }
+    }
+    printf("Error: symbol_set not found in symbol_table_map_sorted\n");
+    exit(1);
+  };
+
+  symbol_sets_unique = new Array2<My_bitset256>(symbol_table_map_sorted.size());
+  node2matchsetidx = new Array2<int>(nodesNum);
+  printf("symbol_sets size: %f KB\n", nodesNum * 32 / 1024.0);
+  printf("symbol_sets_unique size: %f KB\n",
+         symbol_table_map_sorted.size() * 32 / 1024.0);
+  printf("symbol_sets_unique_idx size: %f KB\n", nodesNum * 4 / 1024.0);
+
+  for (int i = 0; i < symbol_table_map_sorted.size(); i++) {
+    symbol_sets_unique->get_host()[i].fromBitset(
+        symbol_table_map_sorted[i].first);
+  }
+  for (int i = 0; i < nfa->size(); i++) {
+    Node *node = nfa->get_node_by_int_id(i);
+    node2matchsetidx->get_host()[i] = get_symbol_set_idx(node->symbol_set);
   }
   return retval;
 }
@@ -257,6 +321,27 @@ Matchset Graph::get_matchset_device(bool is_soa) {
                  sizeof(uint32_t) * ms.sizeofdata, cudaMemcpyHostToDevice);
     }
   }
+  return ms;
+}
+
+MatchsetUnique Graph::get_matchset_unique_device(int matchset_unique_num, bool use_soa) {
+  MatchsetUnique ms;
+
+  ms.use_soa = false;
+  ms.sizeofdata = 8;
+  ms.size = matchset_unique_num;
+  cudaMalloc((void **)&ms.matchsetidx, nodesNum * sizeof(int));
+  cudaMalloc((void **)&ms.d_data,
+             matchset_unique_num * sizeof(uint32_t) * ms.sizeofdata);
+  cudaMemcpy(ms.matchsetidx, node2matchsetidx->get_host(),
+             sizeof(int) * nodesNum, cudaMemcpyHostToDevice);
+
+  for (int i = 0; i < matchset_unique_num; i++) {
+    cudaMemcpy(ms.d_data + i * ms.sizeofdata,
+               symbol_sets_unique->get_host()[i].data,
+               sizeof(uint32_t) * ms.sizeofdata, cudaMemcpyHostToDevice);
+  }
+
   return ms;
 }
 

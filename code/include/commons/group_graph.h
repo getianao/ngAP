@@ -35,16 +35,17 @@ public:
 class GroupMatchset {
 public:
   int size;
-  Matchset *groups_ms;
+  MatchsetUnique *groups_ms;
 
   void init(std::vector<Graph *> &gs, bool use_soa) {
     this->size = gs.size();
-    CHECK_ERROR(cudaMalloc(&groups_ms, sizeof(Matchset) * size));
+    CHECK_ERROR(cudaMalloc(&groups_ms, sizeof(MatchsetUnique) * size));
     for (int i = 0; i < size; i++) {
       Graph *graph = gs[i];
-      Matchset ms = graph->get_matchset_device(use_soa);
-      CHECK_ERROR(cudaMemcpy((void *)(groups_ms + i), (Matchset *)&ms,
-                             sizeof(Matchset), cudaMemcpyHostToDevice));
+      MatchsetUnique ms = graph->get_matchset_unique_device(
+          graph->symbol_sets_unique->size(), use_soa);
+      CHECK_ERROR(cudaMemcpy((void *)(groups_ms + i), (MatchsetUnique *)&ms,
+                             sizeof(MatchsetUnique), cudaMemcpyHostToDevice));
     }
   }
 
