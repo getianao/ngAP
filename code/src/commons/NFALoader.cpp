@@ -110,8 +110,15 @@ NFA *load_nfa_from_anml(string filename) {
             nfa->addNode(parse_new_state(node));
             Node *current_node = nfa->get_node_by_int_id(nfa->size() - 1);
 
+            string node_id = current_node->str_id;
             for(pugi::xml_node aom : node.children("activate-on-match")) {
-            	nfa->addEdge(current_node->str_id, aom.attribute("element").value());
+              string to_str_id = aom.attribute("element").value();
+              if (node_id == to_str_id) { // self loop
+                current_node->segmented_start = true;
+                continue;
+              }
+              nfa->addEdge(current_node->str_id,
+                           aom.attribute("element").value());
             }
 
             for(pugi::xml_node aom : node.children("report-on-match")) {

@@ -61,6 +61,7 @@ public:
 
 	
 	bool report = false;
+	bool segmented_start = false;
 
 	// new added for mnrl
 	string report_code;

@@ -65,6 +65,16 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
+    if (node_attrs[rvertex] & 0b100) {
+      if (symbol_set.test(rvertex, rsymbol)) {
+        addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
+                          *d_buffer_start, d_buffer_end_tmp,
+                          buffer_capacity_per_block);
+        if (node_attrs[rvertex] & 0b10)
+          addResult2(rvertex, riter + 1, d_results_v, d_results_i, results_size,
+                     nblb.results_capacity, nblb.report_off);
+      }
+    }
     // #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
@@ -101,6 +111,16 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
+    if (node_attrs[rvertex] & 0b100) {
+      if (symbol_set.test(rvertex, rsymbol)) {
+        addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
+                          *d_buffer_start, d_buffer_end_tmp,
+                          buffer_capacity_per_block);
+        if (node_attrs[rvertex] & 0b10)
+          addResult2(rvertex, riter + 1, d_results_v, d_results_i, results_size,
+                     nblb.results_capacity, nblb.report_off);
+      }
+    }
 #pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
