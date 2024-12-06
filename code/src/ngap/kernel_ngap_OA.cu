@@ -62,13 +62,14 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     // advance + filter
     if (riter >= input_bound - 1)
       return;
-    uint8_t rsymbol = arr_input_streams[riter + 1];
+    // uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
     // #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
-      if (symbol_set.test(rneighbor, rsymbol)) {
+      // if (symbol_set.test(rneighbor, rsymbol)) {
+      if (symbol_set.test_cc(rneighbor, riter + 1)) {
         if (false) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor, riter));
@@ -98,13 +99,14 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     // advance + filter
     if (riter >= input_bound - 1)
       return;
-    uint8_t rsymbol = arr_input_streams[riter + 1];
+    // uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
 #pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
-      if (symbol_set.test(rneighbor, rsymbol)) {
+      // if (symbol_set.test(rneighbor, rsymbol)) {
+      if (symbol_set.test_cc(rneighbor, riter + 1)) {
         if (unique && isUnique) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor, riter));
@@ -226,10 +228,11 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
           // If vertex > 0, do advance and filter.
           if (vertex < 0) {
             if (precompute_depth == 0) {
-              uint8_t symbol = arr_input_streams[iter];
+              // uint8_t symbol = arr_input_streams[iter];
               for (int i = 0; i < csr.alwaysActiveNum; i++) {
                 int aan = always_active_nodes[i];
-                if (symbol_set.test(aan, symbol)) {
+                // if (symbol_set.test(aan, symbol)) {
+                if (symbol_set.test_cc(aan, iter)) {
                   addToBufferSimple(aan, iter, d_buffer, d_buffer_idx,
                                     *d_buffer_start, d_buffer_end_tmp,
                                     buffer_capacity_per_block);

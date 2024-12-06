@@ -130,7 +130,7 @@ void ngap::launch_blocking_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
 
@@ -299,7 +299,7 @@ void ngap::launch_non_blocking_nap_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
 
@@ -529,7 +529,7 @@ void ngap::launch_non_blocking_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
 
@@ -774,7 +774,7 @@ void ngap::launch_non_blocking_prec_groups() {
   initGroupCsrWithPrec(gcsr, gs, plo->precompute_depth,
                        plo->compress_prec_table);
   // gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
   // return;
@@ -1129,7 +1129,7 @@ void ngap::launch_non_blocking_r1_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
 
@@ -1310,7 +1310,7 @@ void ngap::launch_non_blocking_r2_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
 
@@ -1496,7 +1496,7 @@ void ngap::launch_non_blocking_all_groups() {
   initGroupCsrWithPrec(gcsr, gs, plo->precompute_depth,
                        plo->compress_prec_table);
   // gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_soa, input_stream, input_stream->size());
   gna.init(gs);
   gaas.init(gs);
 

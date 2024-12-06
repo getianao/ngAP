@@ -34,7 +34,11 @@ struct MatchsetUnique {
   uint32_t *d_data = NULL;
   int sizeofdata = 0; // 8 bytes for 256
   int size = 0;
+  // TODO(tge): use uint8_t
   int *matchsetidx;
+  int cc_stream_size = 0;
+
+  uint32_t *cc_stream;
 
   void release() { cudaFree((void *)d_data); }
 
@@ -50,6 +54,14 @@ struct MatchsetUnique {
       return *(d_data + vertex * sizeofdata + (symbol / 32)) &
              (1 << (symbol % 32));
     }
+  }
+
+  __device__ inline bool test_cc(int vertex, int symbol_idx) {
+    // printf("vertex: %d, symbolset_id: %d, cc_stream_size=%d, symbol_idx=%d\n",
+    //        vertex, matchsetidx[vertex], cc_stream_size, symbol_idx);
+    vertex = matchsetidx[vertex]; // get the real index
+    return *(cc_stream + vertex * cc_stream_size + (symbol_idx / 32)) &
+           (1 << (31 - symbol_idx % 32));
   }
 };
 
