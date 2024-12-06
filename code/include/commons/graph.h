@@ -34,23 +34,21 @@ struct MatchsetUnique {
   uint32_t *d_data = NULL;
   int sizeofdata = 0; // 8 bytes for 256
   int size = 0;
-  int *matchsetidx;
 
-  void release() { cudaFree((void *)d_data); }
+  uint16_t *matchsetidx;
+
+  void release() {
+    cudaFree((void *)d_data);
+    cudaFree((void *)matchsetidx);
+  }
 
   __device__ inline bool test(int vertex, int symbol) {
-    if (use_soa) {
-      // printf("Not implemented\n");
-      // exit(1);
-      return *(d_data + symbol * sizeofdata + (vertex / 32)) &
-             (1 << (vertex % 32));
-    } else {
+    
       // printf("vertex: %d, symbolset_id: %d\n", vertex, matchsetidx[vertex]);
       vertex = matchsetidx[vertex]; // get the real index
       return *(d_data + vertex * sizeofdata + (symbol / 32)) &
              (1 << (symbol % 32));
     }
-  }
 };
 
 template <typename T1, typename ArrayT, typename SizeT, typename LessOp>
@@ -141,7 +139,7 @@ public:
   int input_length = 0;
 
   Array2<My_bitset256> *symbol_sets_unique;
-  Array2<int> *node2matchsetidx;
+  Array2<uint16_t> *node2matchsetidx;
 
   cudaError_t ReadANML(std::string filename);
   cudaError_t ReadNFA(NFA *nfa);

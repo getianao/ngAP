@@ -252,11 +252,11 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
   };
 
   symbol_sets_unique = new Array2<My_bitset256>(symbol_table_map_sorted.size());
-  node2matchsetidx = new Array2<int>(nodesNum);
+  node2matchsetidx = new Array2<uint16_t>(nodesNum);
   printf("symbol_sets size: %f KB\n", nodesNum * 32 / 1024.0);
   printf("symbol_sets_unique size: %f KB\n",
          symbol_table_map_sorted.size() * 32 / 1024.0);
-  printf("symbol_sets_unique_idx size: %f KB\n", nodesNum * 4 / 1024.0);
+  printf("symbol_sets_unique_idx size: %f KB\n", nodesNum * 2 / 1024.0);
 
   for (int i = 0; i < symbol_table_map_sorted.size(); i++) {
     symbol_sets_unique->get_host()[i].fromBitset(
@@ -264,7 +264,8 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
   }
   for (int i = 0; i < nfa->size(); i++) {
     Node *node = nfa->get_node_by_int_id(i);
-    node2matchsetidx->get_host()[i] = get_symbol_set_idx(node->symbol_set);
+    node2matchsetidx->get_host()[i] =
+        uint16_t(get_symbol_set_idx(node->symbol_set));
   }
   return retval;
 }
@@ -330,11 +331,11 @@ MatchsetUnique Graph::get_matchset_unique_device(int matchset_unique_num, bool u
   ms.use_soa = false;
   ms.sizeofdata = 8;
   ms.size = matchset_unique_num;
-  cudaMalloc((void **)&ms.matchsetidx, nodesNum * sizeof(int));
+  cudaMalloc((void **)&ms.matchsetidx, nodesNum * sizeof(uint16_t));
   cudaMalloc((void **)&ms.d_data,
              matchset_unique_num * sizeof(uint32_t) * ms.sizeofdata);
   cudaMemcpy(ms.matchsetidx, node2matchsetidx->get_host(),
-             sizeof(int) * nodesNum, cudaMemcpyHostToDevice);
+             sizeof(uint16_t) * nodesNum, cudaMemcpyHostToDevice);
 
   for (int i = 0; i < matchset_unique_num; i++) {
     cudaMemcpy(ms.d_data + i * ms.sizeofdata,
