@@ -219,9 +219,6 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
       start_active_nodes->get_host()[startActiveIndex] = i;
       startActiveIndex++;
     }
-    if (node->segmented_start == true) {
-      node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 2));
-    }
     if (node->is_report())
       node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 1));
     for (int j = 0; j < nfa->adj[node->str_id].size(); j++) {
