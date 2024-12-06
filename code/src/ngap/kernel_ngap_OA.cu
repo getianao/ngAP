@@ -22,27 +22,41 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
   uint blockId = blockIdx.y * gridDim.x + blockIdx.x;
 
   const int buffer_capacity_per_block = nblb.buffer_capacity_per_block;
-
+  const int buffer_capacity_per_block_removed_state =
+      nblb.buffer_capacity_per_block_removed_state;
   const int data_buffer_fetch_size = nblb.data_buffer_fetch_size;
   // const int add_aas_start = nblb.add_aas_start;
   const int add_aas_interval = nblb.add_aas_interval;
   const int input_bound = (input_index + 1) * arr_input_streams_size;
   int *d_buffer;
   int *d_buffer_idx;
+  int *d_buffer_removed_state;
+  int *d_buffer_idx_removed_state;
 
   if (blockId < gridDim.x * gridDim.y / 2) {
     d_buffer = nblb.d_buffer + blockId * buffer_capacity_per_block;
     d_buffer_idx = nblb.d_buffer_idx + blockId * buffer_capacity_per_block;
+    d_buffer_removed_state =
+        nblb.d_buffer_removed_state + blockId * buffer_capacity_per_block_removed_state;
+    d_buffer_idx_removed_state =
+        nblb.d_buffer_idx_removed_state + blockId * buffer_capacity_per_block_removed_state;
   } else {
     d_buffer = nblb.d_buffer2 + (blockId - gridDim.x * gridDim.y / 2) *
                                     buffer_capacity_per_block;
     d_buffer_idx = nblb.d_buffer_idx2 + (blockId - gridDim.x * gridDim.y / 2) *
                                             buffer_capacity_per_block;
+    d_buffer_removed_state = nblb.d_buffer2_removed_state +
+                             (blockId - gridDim.x * gridDim.y / 2) *
+                                 buffer_capacity_per_block_removed_state;
+    d_buffer_idx_removed_state = nblb.d_buffer_idx2_removed_state +
+                                 (blockId - gridDim.x * gridDim.y / 2) *
+                                     buffer_capacity_per_block_removed_state;
   }
   uint *d_buffer_start = nblb.d_buffer_start + blockId;
   uint *d_buffer_end = nblb.d_buffer_end + blockId;
   uint *d_buffer_end_tmp = nblb.d_buffer_end_tmp + blockId;
 
+  uint *d_buffer_end_removed_state = nblb.d_buffer_end_removed_state + blockId;
 
   // uint *length = nblb.length + blockId;
   // uint64_t *results = nblb.d_results;
@@ -53,7 +67,7 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
   int *d_symbol_table = nblb.d_symbol_table +
                         blockIdx.x * (nblb.num_seg * arr_input_streams_size);
   int *newest_idx = nblb.d_newest_idx + blockId;
-  if (csr.alwaysActiveNum == 0) {
+  if (csr.alwaysActiveNum == 0 || nblb.disable_always_active) {
     *newest_idx = input_bound;
   }
   // int *fakeiter = nblb.d_fakeiter + blockId * arr_input_streams_size;
@@ -73,14 +87,20 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     // #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
-      if (rneighbor == rvertex) {
+      if (node_attrs[rneighbor] & 0b100) {}
+      if (symbol_set.test(rneighbor, rsymbol)) {
+        // TODO(tge): move removed_state to template
+        if (removed_state && (node_attrs[rneighbor] & 0b100)) {
+          // printf("removed_state: %d , iter: %d\n", rneighbor, riter + 1);
+          addToBufferSimple(rneighbor, riter + 1, d_buffer_removed_state,
+                            d_buffer_idx_removed_state, 0,
+                            d_buffer_end_removed_state,
+                            buffer_capacity_per_block_removed_state);
+          if (node_attrs[rneighbor] & 0b10)
+            addResult2(rneighbor, riter + 1, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
           continue;
         }
-      if (symbol_set.test(rneighbor, rsymbol)) {
-        // if (removed_state && (node_attrs[rneighbor] & 0b100)) {
-        //   continue;
-        // }
-        
         if (false) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor, riter));
@@ -116,9 +136,9 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 #pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
-      if (rneighbor == rvertex) {
-        continue;
-      }
+      // if (rneighbor == rvertex) {
+      //   continue;
+      // }
       if (symbol_set.test(rneighbor, rsymbol)) {
         if (unique && isUnique) {
           int mask1 =
@@ -378,7 +398,7 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
       if (precompute_depth > 0) {
         *fakeiter_size2 = 0;
       }
-      // printf("length=%d, d_buffer_start=%d, d_buffer_end=%d\n", length, *d_buffer_start, *d_buffer_end);
+      printf("length=%d, d_buffer_start=%d, d_buffer_end=%d\n", length, *d_buffer_start, *d_buffer_end);
       if (record_fs) {
         int old = atomicAdd(nblb.d_froniter_end, 1);
         nblb.d_froniter_length[old] = length;

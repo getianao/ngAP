@@ -501,6 +501,10 @@ __host__ void NonBlockingBuffer::init_nfagroups(
   else
     buffer_capacity = DATA_BUFFER_SIZE;
 
+  buffer_capacity_removed_state = DATA_BUFFER_SIZE_FRONTIER_REMOVED_STATE;
+  buffer_capacity_per_block_removed_state =
+      buffer_capacity_removed_state / block_num;
+
   results_capacity = plo->output_capacity;
   printf("results_capacity = %llu \n", results_capacity);
   buffer_capacity_per_block = buffer_capacity / ((block_num + 1) / 2);
@@ -731,6 +735,18 @@ __host__ void NonBlockingBuffer::init_nfagroups(
   CHECK_ERROR(cudaMemset((void *)d_symbol_table, 0,
                          sizeof(int) * input_total_size * group_num));
 
+  if (plo->remove_self_loop) {
+    CHECK_ERROR(cudaMalloc((void **)&d_buffer_removed_state,
+                           sizeof(int) * buffer_capacity_removed_state));
+    CHECK_ERROR(cudaMalloc((void **)&d_buffer_idx_removed_state,
+                           sizeof(int) * buffer_capacity_removed_state));
+    CHECK_ERROR(cudaMalloc((void **)&d_buffer2_removed_state,
+                           sizeof(int) * buffer_capacity_removed_state));
+    CHECK_ERROR(cudaMalloc((void **)&d_buffer_idx2_removed_state,
+                           sizeof(int) * buffer_capacity_removed_state));
+    CHECK_ERROR(cudaMalloc((void **)&d_buffer_end_removed_state,
+                           sizeof(uint) * block_num));
+  }
 
   // CHECK_ERROR(cudaMalloc((void **)&preresult, sizeof(int) *
   // buffer_capacity)); CHECK_ERROR(
@@ -770,6 +786,12 @@ __host__ void NonBlockingBuffer::release(ngap_option *plo, bool isGroup) {
   CHECK_ERROR(cudaFree((void *)d_results_v));
   CHECK_ERROR(cudaFree((void *)d_results_i));
 
+  if (plo->remove_self_loop) {
+    CHECK_ERROR(cudaFree((void *)d_buffer_removed_state));
+    CHECK_ERROR(cudaFree((void *)d_buffer_idx_removed_state));
+    CHECK_ERROR(cudaFree((void *)d_buffer2_removed_state));
+    CHECK_ERROR(cudaFree((void *)d_buffer_idx2_removed_state));
+  }
 
   CHECK_ERROR(cudaFree((void *)d_newest_idx));
   CHECK_ERROR(cudaFree((void *)d_fakeiter2));
