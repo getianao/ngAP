@@ -314,12 +314,14 @@ public:
       } else {
         h_row_offsets_compressed[i] =
             h_row_offsets_compressed[i - 1] + unique_sets[i - 1].size();
-        column_indices_compressed.insert(column_indices_compressed.end(),
-                                         unique_sets[i - 1].begin(),
-                                         unique_sets[i - 1].end());
+        if (unique_sets[i - 1].size() > 0)
+          column_indices_compressed.insert(column_indices_compressed.end(),
+                                           unique_sets[i - 1].begin(),
+                                           unique_sets[i - 1].end());
       }
     }
 
+    h_column_indices_compressed = new int[column_indices_compressed.size()];
     memcpy(h_column_indices_compressed, column_indices_compressed.data(),
            sizeof(int) * column_indices_compressed.size());
     CHECK_ERROR(cudaMalloc((void **)&d_row_offsets_compressed_type,
