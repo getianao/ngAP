@@ -3098,6 +3098,7 @@ void ngap::initGroupCsrWithPrec(GroupCsr &gscr, std::vector<Graph *> &gs,
     if (max_depth > 0)
       total_size += getPrecomputeResultsForKGroupsInCsr(csr, graph, max_depth,
                                                         compressPrecTable);
+    csr.compressCsr();
     csr.moveToDevice();
     gscr.h_groups_csr[i] = csr;
     CHECK_ERROR(cudaMemcpy((void *)(gscr.groups_csr + i), (Csr *)&csr,

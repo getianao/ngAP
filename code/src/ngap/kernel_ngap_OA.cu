@@ -63,11 +63,11 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     if (riter >= input_bound - 1)
       return;
     uint8_t rsymbol = arr_input_streams[riter + 1];
-    int rn_start = csr.GetNeighborListOffset(rvertex);
-    int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
+    int rn_start = csr.GetNeighborListOffset2(rvertex);
+    int rn_end = rn_start + csr.GetNeighborListLength2(rvertex);
     // #pragma unroll 4
     while (rn_start < rn_end) {
-      int rneighbor = csr.d_column_indices[rn_start++];
+      int rneighbor = csr.d_column_indices_compressed[rn_start++];
       if (symbol_set.test(rneighbor, rsymbol)) {
         if (false) {
           int mask1 =
@@ -82,6 +82,9 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
                          results_size, nblb.results_capacity, nblb.report_off);
           }
         } else {
+          // if (threadIdx.x < 32 && blockIdx.x == 0)
+          //   printf("rvertex=%d rneighbor=%d riter=%d\n", rvertex, rneighbor,
+          //          riter);
           addToBufferSimple(rneighbor, riter + 1, d_buffer, d_buffer_idx,
                             *d_buffer_start, d_buffer_end_tmp,
                             buffer_capacity_per_block);
@@ -99,11 +102,11 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
     if (riter >= input_bound - 1)
       return;
     uint8_t rsymbol = arr_input_streams[riter + 1];
-    int rn_start = csr.GetNeighborListOffset(rvertex);
-    int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
+    int rn_start = csr.GetNeighborListOffset2(rvertex);
+    int rn_end = rn_start + csr.GetNeighborListLength2(rvertex);
 #pragma unroll 2
     while (rn_start < rn_end) {
-      int rneighbor = csr.d_column_indices[rn_start++];
+      int rneighbor = csr.d_column_indices_compressed[rn_start++];
       if (symbol_set.test(rneighbor, rsymbol)) {
         if (unique && isUnique) {
           int mask1 =

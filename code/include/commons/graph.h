@@ -159,6 +159,14 @@ public:
   int *h_column_indices;
   int *h_row_offsets;
 
+  int *d_row_offsets_compressed_type; // node -> type
+  int *d_row_offsets_compressed;   // type -> offset
+  int *d_column_indices_compressed;  // data
+
+  int *h_row_offsets_compressed_type;
+  int *h_row_offsets_compressed;
+  int *h_column_indices_compressed;
+
   int nodesNum = 0;
   int edgesNum = 0;
   int alwaysActiveNum = 0;
@@ -248,6 +256,100 @@ public:
       } else
         h_row_offsets[row] = edgesNum;
     }
+  }
+
+  // struct SetHash {
+  //   template <typename T> std::size_t operator()(const std::set<T> &s) const {
+  //     std::size_t hash = 0;
+  //     for (const T &elem : s) {
+  //       hash ^= std::hash<T>()(elem) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+  //     }
+  //     return hash;
+  //   }
+  // };
+
+  void compressCsr() {
+    // cagegorize the nodes by the neighbor
+    std::map<std::set<int>, int> unique_set_map; // unique neigbor set -> type
+    std::vector<std::set<int>> unique_sets; // type -> unique neigbor set
+    std::map<int, int> unique_set_num_map;       // type -> type number
+    
+    std::vector<int> node_to_set; // node -> type
+
+    int num_nodes = nodesNum;
+    for (int node = 0; node < num_nodes; ++node) {
+      // Extract the neighbors for the current node
+      int start = GetNeighborListOffset(node);
+      int end = start + GetNeighborListLength(node);
+
+      std::set<int> neighbors(h_column_indices + start, h_column_indices + end);
+
+      int type;
+      if (unique_set_map.find(neighbors) == unique_set_map.end()) {
+        type = unique_sets.size();
+        unique_set_map[neighbors] = type;
+        unique_set_num_map[type] = 1;
+        unique_sets.push_back(neighbors);
+      } else {
+        type = unique_set_map[neighbors];
+        unique_set_num_map[type] += 1;
+      }
+      node_to_set.push_back(type);
+    }
+
+    printf("node num: %d\n", num_nodes);
+    printf("unique_sets.size(): %d\n", unique_sets.size());
+
+    // Node to type
+    h_row_offsets_compressed_type = new int[num_nodes];
+    memcpy(h_row_offsets_compressed_type, node_to_set.data(),
+           sizeof(int) * num_nodes);
+    // type to offset
+    // offset to data
+    h_row_offsets_compressed = new int[unique_sets.size() + 1];
+    std::vector<int> column_indices_compressed;
+    for (int i = 0; i <= unique_sets.size(); i++) {
+      if (i == 0) {
+        h_row_offsets_compressed[i] = 0;
+      } else {
+        h_row_offsets_compressed[i] =
+            h_row_offsets_compressed[i - 1] + unique_sets[i - 1].size();
+        column_indices_compressed.insert(column_indices_compressed.end(),
+                                         unique_sets[i - 1].begin(),
+                                         unique_sets[i - 1].end());
+      }
+    }
+
+    memcpy(h_column_indices_compressed, column_indices_compressed.data(),
+           sizeof(int) * column_indices_compressed.size());
+    CHECK_ERROR(cudaMalloc((void **)&d_row_offsets_compressed_type,
+                           sizeof(int) * num_nodes));
+    CHECK_ERROR(cudaMemcpy((void *)d_row_offsets_compressed_type,
+                           h_row_offsets_compressed_type,
+                           sizeof(int) * num_nodes, cudaMemcpyHostToDevice));
+    CHECK_ERROR(cudaMalloc((void **)&d_row_offsets_compressed,
+                           sizeof(int) * (unique_sets.size() + 1)));
+    CHECK_ERROR(cudaMemcpy(
+        (void *)d_row_offsets_compressed, h_row_offsets_compressed,
+        sizeof(int) * (unique_sets.size() + 1), cudaMemcpyHostToDevice));
+    CHECK_ERROR(cudaMalloc((void **)&d_column_indices_compressed,
+                           sizeof(int) * column_indices_compressed.size()));
+    CHECK_ERROR(cudaMemcpy((void *)d_column_indices_compressed,
+                           column_indices_compressed.data(),
+                           sizeof(int) * column_indices_compressed.size(),
+                           cudaMemcpyHostToDevice));
+  }
+
+  __device__ __forceinline__ int GetNeighborListOffset2(const int &v) const {
+    int type = _ldg(d_row_offsets_compressed_type + v);
+    return _ldg(d_row_offsets_compressed + type);
+  }
+
+  __device__ __forceinline__ int GetNeighborListLength2(const int &v) const {
+    int type = _ldg(d_row_offsets_compressed_type + v);
+
+    return _ldg(d_row_offsets_compressed + (type + 1)) -
+           _ldg(d_row_offsets_compressed + type);
   }
 
   __device__ __host__ __forceinline__ int
