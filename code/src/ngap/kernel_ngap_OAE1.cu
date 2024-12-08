@@ -7,12 +7,13 @@ using namespace ngap_nb;
 template <bool unique, int precompute_depth, bool record_fs, bool adaptive_aas>
 __global__ void
 // __launch_bounds__(256, 6)
-advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
+advanceAndFilterNonBlockingAllE1Groups(NonBlockingBuffer nblb,
                                      uint8_t *arr_input_streams,
                                      int arr_input_streams_size,
                                      GroupMatchset gms, GroupNodeAttrs gna,
                                      GroupAAS gaas, GroupCsr gcsr) {
-  Matchset symbol_set = *(static_cast<Matchset *>(gms.groups_ms) + blockIdx.x);
+  MatchsetUnique symbol_set =
+      *(static_cast<MatchsetUnique *>(gms.groups_ms) + blockIdx.x);
   uint8_t *node_attrs = gna.groups_node_attrs[blockIdx.x];
   int *always_active_nodes = gaas.groups_always_active_states[blockIdx.x];
   Csr csr = gcsr.groups_csr[blockIdx.x];
@@ -59,9 +60,10 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 
   // int max_depth = 1;
   auto processRealVertexR0 = [&](int rvertex, int riter, int depth) {
-    // advance + filter
+    // Last symbol, no need to advance.
     if (riter >= input_bound - 1)
       return;
+    // advance + filter
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
@@ -95,9 +97,10 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 
   auto processRealVertexR1 = [&](int rvertex, int riter, int depth,
                                  bool isUnique) {
-    // advance + filter
+    // Last symbol, no need to advance.
     if (riter >= input_bound - 1)
       return;
+    // advance + filter
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
@@ -373,45 +376,45 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
   }
 }
 
-#define __advanceAndFilterNonBlockingAllGroups(T1, T2, T3, T4)                 \
+#define __advanceAndFilterNonBlockingAllE1Groups(T1, T2, T3, T4)           \
   template __global__ void                                                     \
-  advanceAndFilterNonBlockingAllGroups<T1, T2, T3, T4>(                        \
+  advanceAndFilterNonBlockingAllE1Groups<T1, T2, T3, T4>(                  \
       NonBlockingBuffer nblb, uint8_t * arr_input_streams,                     \
       int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,       \
       GroupAAS gaas, GroupCsr gcsr);
 
-__advanceAndFilterNonBlockingAllGroups(false, 0, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 0, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 0, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 0, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 0, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 0, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 0, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 0, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(false, 0, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(true, 0, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 0, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 0, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 0, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 0, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 0, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 0, true, true);
 
-__advanceAndFilterNonBlockingAllGroups(false, 1, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 1, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 1, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 1, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 1, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 1, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 1, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 1, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(false, 1, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(true, 1, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 1, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 1, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 1, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 1, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 1, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 1, true, true);
 
-__advanceAndFilterNonBlockingAllGroups(false, 2, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 2, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 2, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 2, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 2, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 2, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 2, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 2, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(false, 2, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(true, 2, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 2, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 2, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 2, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 2, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 2, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 2, true, true);
 
-__advanceAndFilterNonBlockingAllGroups(false, 3, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 3, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 3, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 3, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 3, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 3, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 3, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 3, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(false, 3, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(true, 3, false, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 3, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 3, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 3, true, false);
+__advanceAndFilterNonBlockingAllE1Groups(false, 3, true, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 3, false, true);
+__advanceAndFilterNonBlockingAllE1Groups(true, 3, true, true);

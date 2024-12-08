@@ -130,7 +130,7 @@ void ngap::launch_blocking_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
 
@@ -299,7 +299,7 @@ void ngap::launch_non_blocking_nap_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
 
@@ -529,7 +529,7 @@ void ngap::launch_non_blocking_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
 
@@ -771,10 +771,10 @@ void ngap::launch_non_blocking_prec_groups() {
   GroupMatchset gms;
   GroupNodeAttrs gna;
   GroupAAS gaas;
-  initGroupCsrWithPrec(gcsr, gs, plo->precompute_depth,
+  initGroupCsrWithPrec(gcsr, gs, plo, plo->precompute_depth,
                        plo->compress_prec_table);
   // gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
   // return;
@@ -1129,7 +1129,7 @@ void ngap::launch_non_blocking_r1_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
 
@@ -1310,7 +1310,7 @@ void ngap::launch_non_blocking_r2_groups() {
   GroupNodeAttrs gna;
   GroupAAS gaas;
   gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
 
@@ -1493,10 +1493,10 @@ void ngap::launch_non_blocking_all_groups() {
   GroupMatchset gms;
   GroupNodeAttrs gna;
   GroupAAS gaas;
-  initGroupCsrWithPrec(gcsr, gs, plo->precompute_depth,
+  initGroupCsrWithPrec(gcsr, gs, plo, plo->precompute_depth,
                        plo->compress_prec_table);
   // gcsr.init(gs);
-  gms.init(gs, plo->use_soa);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
   gna.init(gs);
   gaas.init(gs);
 
@@ -2077,6 +2077,1821 @@ void ngap::launch_non_blocking_all_groups() {
   gaas.release();
 }
 
+// E1
+void ngap::launch_non_blocking_all_e1_groups() {
+  tge_log("automata nonblocking all ::launch!", BOLDBLUE);
+
+  auto start1 = std::chrono::high_resolution_clock::now();
+
+  Array2<uint8_t> *input_stream = this->concat_input_streams_to_array2();
+  input_stream->copy_to_device();
+  int multi_ss_size = symbol_streams[0].get_length();
+
+  // Csr
+  Csr csr(graph);
+  csr.fromCoo(graph.edge_pairs->get_host());
+  csr.moveToDevice();
+  Matchset ms = graph.get_matchset_device(plo->use_soa);
+
+  GroupCsr gcsr;
+  GroupMatchset gms;
+  GroupNodeAttrs gna;
+  GroupAAS gaas;
+  initGroupCsrWithPrec(gcsr, gs, plo, plo->precompute_depth,
+                       plo->compress_prec_table);
+  // gcsr.init(gs);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
+  gna.init(gs);
+  gaas.init(gs);
+
+  NonBlockingBuffer nblb;
+  nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
+                      multi_ss_size, gs, plo);
+
+  dim3 blocksPerGrid(plo->group_num, num_seg, 1);
+  dim3 threadsPerBlock(BLOCK_SIZE, 1, 1);
+  auto end1 = std::chrono::high_resolution_clock::now();
+  auto duration1 =
+      std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
+  printf("prepare time = %f s\n", duration1.count() / 1000000.0);
+  if (nblb.unique) {
+    switch (plo->precompute_depth) {
+    case 0:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<true, 0, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 1:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<true, 1, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 2:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<true, 2, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 3:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<true, 3, false, false>,
+          BLOCK_SIZE);
+      break;
+    default:
+      break;
+    }
+  } else {
+    switch (plo->precompute_depth) {
+    case 0:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<false, 0, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 1:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<false, 1, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 2:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<false, 2, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 3:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE1Groups<false, 3, false, false>,
+          BLOCK_SIZE);
+      break;
+    default:
+      break;
+    }
+  }
+
+  auto startNonBlockAutomata = [&](bool &passValidation) -> double {
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    if (plo->adaptive_aas) {
+      printf("Use adaptive aas\n");
+      if (plo->motivate_worklist_length) {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<true, 0, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<true, 1, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<true, 2, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<true, 3, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<false, 0, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<false, 1, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<false, 2, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<false, 3, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      } else {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<true, 0, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<true, 1, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<true, 2, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<true, 3, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<false, 0, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<false, 1, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<false, 2, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<false, 3, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+
+    } else {
+      if (plo->motivate_worklist_length) {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<true, 0, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<true, 1, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<true, 2, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<true, 3, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<false, 0, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<false, 1, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<false, 2, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<false, 3, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      } else {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<true, 0, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<true, 1, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<true, 2, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<true, 3, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE1Groups<false, 0, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE1Groups<false, 1, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE1Groups<false, 2, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE1Groups<false, 3, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+    }
+
+    // cudaDeviceSynchronize();
+
+    CHECK_LAST_ERROR
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    double throughput = (double)input_stream->size() / (milliseconds * 1000);
+
+    uint *h_buffer_end = new uint[num_seg];
+    uint buffer_total_size = 0;
+    CHECK_ERROR(cudaMemcpy((void *)h_buffer_end, nblb.d_buffer_end,
+                           sizeof(uint) * num_seg, cudaMemcpyDeviceToHost));
+    for (int i = 0; i < num_seg; i++) {
+      buffer_total_size += h_buffer_end[i];
+    }
+    // printf("buffer_total_size: %u \n", buffer_total_size);
+
+    unsigned long long int *h_results_size = new unsigned long long int;
+    CHECK_ERROR(cudaMemcpy((void *)h_results_size, nblb.d_results_size,
+                           sizeof(unsigned long long int),
+                           cudaMemcpyDeviceToHost));
+    std::cout << "Results number: " << *h_results_size << std::endl;
+    if (plo->motivate_worklist_length) {
+      int *h_froniter_end = new int;
+      CHECK_ERROR(cudaMemcpy((void *)h_froniter_end, nblb.d_froniter_end,
+                             sizeof(int), cudaMemcpyDeviceToHost));
+
+      int *h_froniter_length = new int[*h_froniter_end];
+      CHECK_ERROR(cudaMemcpy((void *)h_froniter_length, nblb.d_froniter_length,
+                             sizeof(int) * *h_froniter_end,
+                             cudaMemcpyDeviceToHost));
+
+      std::string path =
+          "/home/tge/workspace/gpunfa-ngap/froniter_length/all/" +
+          plo->app_name + ".txt";
+      std::ofstream froniter_length_file(path);
+      printf("Save froniter length file to %s\n", path.c_str());
+      if (froniter_length_file.is_open()) {
+        for (int i = 0; i < *h_froniter_end; i++) {
+          froniter_length_file << h_froniter_length[i] << "\n";
+        }
+        froniter_length_file.close();
+      } else
+        assert(false);
+      delete[] h_froniter_length;
+    }
+
+    bool validation = plo->validation;
+    if (validation) {
+
+      if (plo->report_off) {
+        unsigned long long int dupnum =
+            plo->duplicate_input_stream > 1 ? plo->duplicate_input_stream : 1;
+        unsigned long long int validation_num = plo->quick_validation * dupnum;
+        if (plo->quick_validation >= 0 && validation_num <= *h_results_size) {
+          if (validation_num == *h_results_size) {
+            tge_log("Quick Validation PASS! (report off, perfect)", BOLDGREEN);
+          } else {
+            tge_log("Quick Validation PASS! (report off, not perfect)",
+                    BOLDGREEN);
+          }
+          passValidation = true;
+          // return throughput;
+        } else {
+          tge_log("Quick Validation FAILED! (report off)", BOLDRED);
+          passValidation = false;
+          // return -1;
+        }
+      } else {
+        uint32_t *h_results_v;
+        uint32_t *h_results_i;
+        uint64_t *h_results = new uint64_t[*h_results_size];
+        if (plo->use_uvm) {
+          h_results_v = nblb.d_results_v;
+          h_results_i = nblb.d_results_i;
+        } else {
+          h_results_v = new uint32_t[*h_results_size];
+          h_results_i = new uint32_t[*h_results_size];
+          CHECK_ERROR(cudaMemcpy((void *)h_results_v, nblb.d_results_v,
+                                 sizeof(uint32_t) * *h_results_size,
+                                 cudaMemcpyDeviceToHost));
+          CHECK_ERROR(cudaMemcpy((void *)h_results_i, nblb.d_results_i,
+                                 sizeof(uint32_t) * *h_results_size,
+                                 cudaMemcpyDeviceToHost));
+        }
+
+        auto addResult = [](uint32_t node, uint32_t index) {
+          uint64_t r = 0;
+          r = (uint32_t)node;
+          r = r << 32;
+          r = r | (uint32_t)index;
+          return r;
+        };
+        for (unsigned long long int i = 0; i < *h_results_size; i++)
+          h_results[i] = addResult(h_results_v[i], h_results_i[i]);
+
+        std::vector<uint64_t> results, ref_results, db_results, ref_db_results;
+        // for (int i = 0; i < *h_results_size; i++)
+        //   results.push_back(h_results[i]);
+        unsigned long long int mc = *h_results_size;
+        results.resize(mc);
+        std::for_each(std::execution::par_unseq, std::begin(results),
+                      std::end(results), [&](uint64_t &r) {
+                        u_int32_t i = &r - &results[0];
+                        assert(i < mc);
+                        results[i] = h_results[i];
+                      });
+        std::sort(std::execution::par_unseq, results.begin(), results.end(),
+                  compareResult);
+        results.erase(std::unique(std::execution::par_unseq, results.begin(),
+                                  results.end()),
+                      results.end());
+        std::cout << "Unique results number: " << results.size() << std::endl;
+        printf("validation start.\n");
+
+        if (plo->quick_validation >= 0) {
+          unsigned long long int dupnum =
+              plo->duplicate_input_stream > 1 ? plo->duplicate_input_stream : 1;
+          unsigned long long int validation_num =
+              plo->quick_validation * dupnum;
+          if (validation_num == results.size()) {
+            tge_log("Quick Validation PASS!", BOLDGREEN);
+            passValidation = true;
+            // return throughput;
+          } else {
+            tge_log("Quick Validation FAILED!", BOLDRED);
+            passValidation = false;
+            // return -1;
+          }
+        } else {
+
+          bool isDup = false;
+          if (plo->duplicate_input_stream > 1 &&
+              (plo->split_chunk_size == -1 ||
+               plo->split_chunk_size == plo->input_len)) {
+            isDup = true;
+          }
+          automataGroupsReference(gs, input_stream->get_host(), num_seg,
+                                  multi_ss_size, &ref_results, &ref_db_results,
+                                  DEBUG_ITER, gcsr, isDup);
+          printf("\n############ Validate result ############ \n");
+          if (automataValidation(&results, &ref_results, true)) {
+            passValidation = true;
+            // return throughput;
+          } else {
+            passValidation = false;
+            // return -1;
+          }
+        }
+
+        if (!plo->use_uvm) {
+          delete[] h_results_v;
+          delete[] h_results_i;
+        }
+        delete[] h_results;
+      }
+    } else {
+      passValidation = true;
+    }
+    delete h_results_size;
+    if (passValidation) {
+      std::cout << "ngap elapsed time: " << milliseconds / 1000.0
+                << " seconds, throughput = " << throughput << " MB/s "
+                << std::endl;
+    } else {
+      std::cout << "ngap elapsed time: " << milliseconds / 1000.0
+                << " seconds, WRONGTHRPUT(" << throughput << ") MB/s "
+                << std::endl;
+    }
+    return throughput;
+  };
+
+  CHECK_LAST_ERROR
+
+  if (plo->tuning == true) {
+    std::vector<int> tuning_fetch_sizes{512,    5120,    10240,   25600,
+                                        256000, 2560000, 25600000};
+    std::vector<int> tuning_add_aas_intervals{4096, 1024, 2048, 1539, 512};
+    std::vector<int> tuning_active_thresholds{0, 8, 16, 24, 32};
+    double max_throughput = -1;
+    std::vector<int> best_choice(3);
+
+    auto tuning_total_start_time = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < tuning_fetch_sizes.size(); i++) {
+      for (int k = 0; k < tuning_active_thresholds.size(); k++) {
+        for (int j = 0; j < tuning_add_aas_intervals.size(); j++) {
+          auto tuning_start_time = std::chrono::high_resolution_clock::now();
+          int fetch_size = tuning_fetch_sizes[i];
+          int add_aas_interval = tuning_add_aas_intervals[j];
+          int active_threshold = tuning_active_thresholds[k];
+          nblb.data_buffer_fetch_size = fetch_size;
+          nblb.add_aas_interval = add_aas_interval;
+          nblb.active_threshold = active_threshold;
+          printf("[Tuning] Try choice: \n   fetch_size=%d, "
+                 "add_aas_interval=%d, active_threshold=%d\n",
+                 fetch_size, add_aas_interval, active_threshold);
+          bool passValidation = true;
+          double throughput = startNonBlockAutomata(passValidation);
+          if (passValidation == true && throughput > 0 &&
+              throughput > max_throughput) {
+            max_throughput = throughput;
+            best_choice = {fetch_size, add_aas_interval, active_threshold};
+            printf(
+                "[Tuning] Update best choice: \n   fetch_size=%d, "
+                "add_aas_interval=%d, active_threshold=%d max_throughput=%f\n",
+                fetch_size, add_aas_interval, active_threshold, max_throughput);
+          } else {
+            printf(
+                "[Tuning] Keep best choice: \n   fetch_size=%d, "
+                "add_aas_interval=%d, active_threshold=%d max_throughput=%f\n",
+                best_choice[0], best_choice[1], best_choice[2], max_throughput);
+          }
+          nblb.reset(input_stream, input_stream->size(), multi_ss_size,
+                     plo->group_num, gs, plo);
+          CHECK_LAST_ERROR
+          auto tuning_end_time = std::chrono::high_resolution_clock::now();
+          auto tuning_duration =
+              std::chrono::duration_cast<std::chrono::microseconds>(
+                  tuning_end_time - tuning_start_time);
+          std::cout << "[Tuning] "
+                    << (double)tuning_duration.count() / 1000000.0
+                    << " seconds\n";
+        }
+      }
+    }
+    auto tuning_total_end_time = std::chrono::high_resolution_clock::now();
+    auto tuning_total_duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            tuning_total_end_time - tuning_total_start_time);
+    std::cout << "[Tuning] Total time: "
+              << (double)tuning_total_duration.count() / 1000000.0
+              << " seconds\n";
+    printf("[Tuning] Tuning completed: the best choice is\n   fetch_size=%d, "
+           "add_aas_interval=%d, active_threshold=%d\n",
+           best_choice[0], best_choice[1], best_choice[2]);
+  } else {
+    bool passValidation = true;
+    startNonBlockAutomata(passValidation);
+    if (!passValidation && plo->try_adaptive_aas) {
+      plo->adaptive_aas = true;
+      printf("Try adaptive aas\n");
+      nblb.release(true);
+      nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
+                          multi_ss_size, gs, plo);
+      startNonBlockAutomata(passValidation);
+    }
+  }
+
+  nblb.release(true);
+  csr.release();
+  csr.releaseDevice();
+  ms.release();
+
+  gcsr.release();
+  gms.release();
+  gna.release();
+  gaas.release();
+}
+
+
+// E2
+void ngap::launch_non_blocking_all_e2_groups() {
+  tge_log("automata nonblocking all ::launch!", BOLDBLUE);
+
+  auto start1 = std::chrono::high_resolution_clock::now();
+
+  Array2<uint8_t> *input_stream = this->concat_input_streams_to_array2();
+  input_stream->copy_to_device();
+  int multi_ss_size = symbol_streams[0].get_length();
+
+  // Csr
+  Csr csr(graph);
+  csr.fromCoo(graph.edge_pairs->get_host());
+  csr.moveToDevice();
+  Matchset ms = graph.get_matchset_device(plo->use_soa);
+
+  GroupCsr gcsr;
+  GroupMatchset gms;
+  GroupNodeAttrs gna;
+  GroupAAS gaas;
+  initGroupCsrWithPrec(gcsr, gs, plo, plo->precompute_depth,
+                       plo->compress_prec_table);
+  // gcsr.init(gs);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
+  gna.init(gs);
+  gaas.init(gs);
+
+  NonBlockingBuffer nblb;
+  nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
+                      multi_ss_size, gs, plo);
+
+  dim3 blocksPerGrid(plo->group_num, num_seg, 1);
+  dim3 threadsPerBlock(BLOCK_SIZE, 1, 1);
+  auto end1 = std::chrono::high_resolution_clock::now();
+  auto duration1 =
+      std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
+  printf("prepare time = %f s\n", duration1.count() / 1000000.0);
+  if (nblb.unique) {
+    switch (plo->precompute_depth) {
+    case 0:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<true, 0, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 1:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<true, 1, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 2:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<true, 2, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 3:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<true, 3, false, false>,
+          BLOCK_SIZE);
+      break;
+    default:
+      break;
+    }
+  } else {
+    switch (plo->precompute_depth) {
+    case 0:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<false, 0, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 1:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<false, 1, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 2:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<false, 2, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 3:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2Groups<false, 3, false, false>,
+          BLOCK_SIZE);
+      break;
+    default:
+      break;
+    }
+  }
+
+  auto startNonBlockAutomata = [&](bool &passValidation) -> double {
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    if (plo->adaptive_aas) {
+      printf("Use adaptive aas\n");
+      if (plo->motivate_worklist_length) {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<true, 0, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<true, 1, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<true, 2, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<true, 3, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<false, 0, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<false, 1, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<false, 2, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<false, 3, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      } else {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<true, 0, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<true, 1, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<true, 2, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<true, 3, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<false, 0, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<false, 1, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<false, 2, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<false, 3, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+
+    } else {
+      if (plo->motivate_worklist_length) {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<true, 0, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<true, 1, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<true, 2, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<true, 3, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<false, 0, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<false, 1, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<false, 2, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<false, 3, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      } else {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<true, 0, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<true, 1, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<true, 2, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<true, 3, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2Groups<false, 0, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2Groups<false, 1, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2Groups<false, 2, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2Groups<false, 3, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+    }
+
+    // cudaDeviceSynchronize();
+
+    CHECK_LAST_ERROR
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    double throughput = (double)input_stream->size() / (milliseconds * 1000);
+
+    uint *h_buffer_end = new uint[num_seg];
+    uint buffer_total_size = 0;
+    CHECK_ERROR(cudaMemcpy((void *)h_buffer_end, nblb.d_buffer_end,
+                           sizeof(uint) * num_seg, cudaMemcpyDeviceToHost));
+    for (int i = 0; i < num_seg; i++) {
+      buffer_total_size += h_buffer_end[i];
+    }
+    // printf("buffer_total_size: %u \n", buffer_total_size);
+
+    unsigned long long int *h_results_size = new unsigned long long int;
+    CHECK_ERROR(cudaMemcpy((void *)h_results_size, nblb.d_results_size,
+                           sizeof(unsigned long long int),
+                           cudaMemcpyDeviceToHost));
+    std::cout << "Results number: " << *h_results_size << std::endl;
+    if (plo->motivate_worklist_length) {
+      int *h_froniter_end = new int;
+      CHECK_ERROR(cudaMemcpy((void *)h_froniter_end, nblb.d_froniter_end,
+                             sizeof(int), cudaMemcpyDeviceToHost));
+
+      int *h_froniter_length = new int[*h_froniter_end];
+      CHECK_ERROR(cudaMemcpy((void *)h_froniter_length, nblb.d_froniter_length,
+                             sizeof(int) * *h_froniter_end,
+                             cudaMemcpyDeviceToHost));
+
+      std::string path =
+          "/home/tge/workspace/gpunfa-ngap/froniter_length/all/" +
+          plo->app_name + ".txt";
+      std::ofstream froniter_length_file(path);
+      printf("Save froniter length file to %s\n", path.c_str());
+      if (froniter_length_file.is_open()) {
+        for (int i = 0; i < *h_froniter_end; i++) {
+          froniter_length_file << h_froniter_length[i] << "\n";
+        }
+        froniter_length_file.close();
+      } else
+        assert(false);
+      delete[] h_froniter_length;
+    }
+
+    bool validation = plo->validation;
+    if (validation) {
+
+      if (plo->report_off) {
+        unsigned long long int dupnum =
+            plo->duplicate_input_stream > 1 ? plo->duplicate_input_stream : 1;
+        unsigned long long int validation_num = plo->quick_validation * dupnum;
+        if (plo->quick_validation >= 0 && validation_num <= *h_results_size) {
+          if (validation_num == *h_results_size) {
+            tge_log("Quick Validation PASS! (report off, perfect)", BOLDGREEN);
+          } else {
+            tge_log("Quick Validation PASS! (report off, not perfect)",
+                    BOLDGREEN);
+          }
+          passValidation = true;
+          // return throughput;
+        } else {
+          tge_log("Quick Validation FAILED! (report off)", BOLDRED);
+          passValidation = false;
+          // return -1;
+        }
+      } else {
+        uint32_t *h_results_v;
+        uint32_t *h_results_i;
+        uint64_t *h_results = new uint64_t[*h_results_size];
+        if (plo->use_uvm) {
+          h_results_v = nblb.d_results_v;
+          h_results_i = nblb.d_results_i;
+        } else {
+          h_results_v = new uint32_t[*h_results_size];
+          h_results_i = new uint32_t[*h_results_size];
+          CHECK_ERROR(cudaMemcpy((void *)h_results_v, nblb.d_results_v,
+                                 sizeof(uint32_t) * *h_results_size,
+                                 cudaMemcpyDeviceToHost));
+          CHECK_ERROR(cudaMemcpy((void *)h_results_i, nblb.d_results_i,
+                                 sizeof(uint32_t) * *h_results_size,
+                                 cudaMemcpyDeviceToHost));
+        }
+
+        auto addResult = [](uint32_t node, uint32_t index) {
+          uint64_t r = 0;
+          r = (uint32_t)node;
+          r = r << 32;
+          r = r | (uint32_t)index;
+          return r;
+        };
+        for (unsigned long long int i = 0; i < *h_results_size; i++)
+          h_results[i] = addResult(h_results_v[i], h_results_i[i]);
+
+        std::vector<uint64_t> results, ref_results, db_results, ref_db_results;
+        // for (int i = 0; i < *h_results_size; i++)
+        //   results.push_back(h_results[i]);
+        unsigned long long int mc = *h_results_size;
+        results.resize(mc);
+        std::for_each(std::execution::par_unseq, std::begin(results),
+                      std::end(results), [&](uint64_t &r) {
+                        u_int32_t i = &r - &results[0];
+                        assert(i < mc);
+                        results[i] = h_results[i];
+                      });
+        std::sort(std::execution::par_unseq, results.begin(), results.end(),
+                  compareResult);
+        results.erase(std::unique(std::execution::par_unseq, results.begin(),
+                                  results.end()),
+                      results.end());
+        std::cout << "Unique results number: " << results.size() << std::endl;
+        printf("validation start.\n");
+
+        if (plo->quick_validation >= 0) {
+          unsigned long long int dupnum =
+              plo->duplicate_input_stream > 1 ? plo->duplicate_input_stream : 1;
+          unsigned long long int validation_num =
+              plo->quick_validation * dupnum;
+          if (validation_num == results.size()) {
+            tge_log("Quick Validation PASS!", BOLDGREEN);
+            passValidation = true;
+            // return throughput;
+          } else {
+            tge_log("Quick Validation FAILED!", BOLDRED);
+            passValidation = false;
+            // return -1;
+          }
+        } else {
+
+          bool isDup = false;
+          if (plo->duplicate_input_stream > 1 &&
+              (plo->split_chunk_size == -1 ||
+               plo->split_chunk_size == plo->input_len)) {
+            isDup = true;
+          }
+          automataGroupsReference(gs, input_stream->get_host(), num_seg,
+                                  multi_ss_size, &ref_results, &ref_db_results,
+                                  DEBUG_ITER, gcsr, isDup);
+          printf("\n############ Validate result ############ \n");
+          if (automataValidation(&results, &ref_results, true)) {
+            passValidation = true;
+            // return throughput;
+          } else {
+            passValidation = false;
+            // return -1;
+          }
+        }
+
+        if (!plo->use_uvm) {
+          delete[] h_results_v;
+          delete[] h_results_i;
+        }
+        delete[] h_results;
+      }
+    } else {
+      passValidation = true;
+    }
+    delete h_results_size;
+    if (passValidation) {
+      std::cout << "ngap elapsed time: " << milliseconds / 1000.0
+                << " seconds, throughput = " << throughput << " MB/s "
+                << std::endl;
+    } else {
+      std::cout << "ngap elapsed time: " << milliseconds / 1000.0
+                << " seconds, WRONGTHRPUT(" << throughput << ") MB/s "
+                << std::endl;
+    }
+    return throughput;
+  };
+
+  CHECK_LAST_ERROR
+
+  if (plo->tuning == true) {
+    std::vector<int> tuning_fetch_sizes{512,    5120,    10240,   25600,
+                                        256000, 2560000, 25600000};
+    std::vector<int> tuning_add_aas_intervals{4096, 1024, 2048, 1539, 512};
+    std::vector<int> tuning_active_thresholds{0, 8, 16, 24, 32};
+    double max_throughput = -1;
+    std::vector<int> best_choice(3);
+
+    auto tuning_total_start_time = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < tuning_fetch_sizes.size(); i++) {
+      for (int k = 0; k < tuning_active_thresholds.size(); k++) {
+        for (int j = 0; j < tuning_add_aas_intervals.size(); j++) {
+          auto tuning_start_time = std::chrono::high_resolution_clock::now();
+          int fetch_size = tuning_fetch_sizes[i];
+          int add_aas_interval = tuning_add_aas_intervals[j];
+          int active_threshold = tuning_active_thresholds[k];
+          nblb.data_buffer_fetch_size = fetch_size;
+          nblb.add_aas_interval = add_aas_interval;
+          nblb.active_threshold = active_threshold;
+          printf("[Tuning] Try choice: \n   fetch_size=%d, "
+                 "add_aas_interval=%d, active_threshold=%d\n",
+                 fetch_size, add_aas_interval, active_threshold);
+          bool passValidation = true;
+          double throughput = startNonBlockAutomata(passValidation);
+          if (passValidation == true && throughput > 0 &&
+              throughput > max_throughput) {
+            max_throughput = throughput;
+            best_choice = {fetch_size, add_aas_interval, active_threshold};
+            printf(
+                "[Tuning] Update best choice: \n   fetch_size=%d, "
+                "add_aas_interval=%d, active_threshold=%d max_throughput=%f\n",
+                fetch_size, add_aas_interval, active_threshold, max_throughput);
+          } else {
+            printf(
+                "[Tuning] Keep best choice: \n   fetch_size=%d, "
+                "add_aas_interval=%d, active_threshold=%d max_throughput=%f\n",
+                best_choice[0], best_choice[1], best_choice[2], max_throughput);
+          }
+          nblb.reset(input_stream, input_stream->size(), multi_ss_size,
+                     plo->group_num, gs, plo);
+          CHECK_LAST_ERROR
+          auto tuning_end_time = std::chrono::high_resolution_clock::now();
+          auto tuning_duration =
+              std::chrono::duration_cast<std::chrono::microseconds>(
+                  tuning_end_time - tuning_start_time);
+          std::cout << "[Tuning] "
+                    << (double)tuning_duration.count() / 1000000.0
+                    << " seconds\n";
+        }
+      }
+    }
+    auto tuning_total_end_time = std::chrono::high_resolution_clock::now();
+    auto tuning_total_duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            tuning_total_end_time - tuning_total_start_time);
+    std::cout << "[Tuning] Total time: "
+              << (double)tuning_total_duration.count() / 1000000.0
+              << " seconds\n";
+    printf("[Tuning] Tuning completed: the best choice is\n   fetch_size=%d, "
+           "add_aas_interval=%d, active_threshold=%d\n",
+           best_choice[0], best_choice[1], best_choice[2]);
+  } else {
+    bool passValidation = true;
+    startNonBlockAutomata(passValidation);
+    if (!passValidation && plo->try_adaptive_aas) {
+      plo->adaptive_aas = true;
+      printf("Try adaptive aas\n");
+      nblb.release(true);
+      nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
+                          multi_ss_size, gs, plo);
+      startNonBlockAutomata(passValidation);
+    }
+  }
+
+  nblb.release(true);
+  csr.release();
+  csr.releaseDevice();
+  ms.release();
+
+  gcsr.release();
+  gms.release();
+  gna.release();
+  gaas.release();
+}
+
+
+// E2p
+void ngap::launch_non_blocking_all_e2p_groups() {
+  tge_log("automata nonblocking all ::launch!", BOLDBLUE);
+
+  auto start1 = std::chrono::high_resolution_clock::now();
+
+  Array2<uint8_t> *input_stream = this->concat_input_streams_to_array2();
+  input_stream->copy_to_device();
+  int multi_ss_size = symbol_streams[0].get_length();
+
+  // Csr
+  Csr csr(graph);
+  csr.fromCoo(graph.edge_pairs->get_host());
+  csr.moveToDevice();
+  Matchset ms = graph.get_matchset_device(plo->use_soa);
+
+  GroupCsr gcsr;
+  GroupMatchset gms;
+  GroupNodeAttrs gna;
+  GroupAAS gaas;
+  initGroupCsrWithPrec(gcsr, gs, plo, plo->precompute_depth,
+                       plo->compress_prec_table);
+  // gcsr.init(gs);
+  gms.init(gs, plo->use_unique_matchset, plo->use_soa);
+  gna.init(gs);
+  gaas.init(gs);
+
+  NonBlockingBuffer nblb;
+  nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
+                      multi_ss_size, gs, plo);
+
+  dim3 blocksPerGrid(plo->group_num, num_seg, 1);
+  dim3 threadsPerBlock(BLOCK_SIZE, 1, 1);
+  auto end1 = std::chrono::high_resolution_clock::now();
+  auto duration1 =
+      std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
+  printf("prepare time = %f s\n", duration1.count() / 1000000.0);
+  if (nblb.unique) {
+    switch (plo->precompute_depth) {
+    case 0:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<true, 0, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 1:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<true, 1, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 2:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<true, 2, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 3:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<true, 3, false, false>,
+          BLOCK_SIZE);
+      break;
+    default:
+      break;
+    }
+  } else {
+    switch (plo->precompute_depth) {
+    case 0:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<false, 0, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 1:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<false, 1, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 2:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<false, 2, false, false>,
+          BLOCK_SIZE);
+      break;
+    case 3:
+      calculateTheoreticalOccupancy2(
+          advanceAndFilterNonBlockingAllE2pGroups<false, 3, false, false>,
+          BLOCK_SIZE);
+      break;
+    default:
+      break;
+    }
+  }
+
+  auto startNonBlockAutomata = [&](bool &passValidation) -> double {
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    if (plo->adaptive_aas) {
+      printf("Use adaptive aas\n");
+      if (plo->motivate_worklist_length) {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 0, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 1, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 2, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 3, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 0, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 1, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 2, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 3, true, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      } else {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 0, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 1, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 2, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 3, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 0, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 1, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 2, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 3, false, true>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+
+    } else {
+      if (plo->motivate_worklist_length) {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 0, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 1, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 2, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 3, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 0, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 1, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 2, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 3, true, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      } else {
+        if (nblb.unique) {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 0, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 1, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 2, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<true, 3, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        } else {
+          switch (plo->precompute_depth) {
+          case 0:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 0, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 1:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 1, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 2:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 2, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          case 3:
+            advanceAndFilterNonBlockingAllE2pGroups<false, 3, false, false>
+                <<<blocksPerGrid, threadsPerBlock>>>(
+                    nblb, input_stream->get_dev(), multi_ss_size, gms, gna,
+                    gaas, gcsr);
+            break;
+          default:
+            break;
+          }
+        }
+      }
+    }
+
+    // cudaDeviceSynchronize();
+
+    CHECK_LAST_ERROR
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    double throughput = (double)input_stream->size() / (milliseconds * 1000);
+
+    uint *h_buffer_end = new uint[num_seg];
+    uint buffer_total_size = 0;
+    CHECK_ERROR(cudaMemcpy((void *)h_buffer_end, nblb.d_buffer_end,
+                           sizeof(uint) * num_seg, cudaMemcpyDeviceToHost));
+    for (int i = 0; i < num_seg; i++) {
+      buffer_total_size += h_buffer_end[i];
+    }
+    // printf("buffer_total_size: %u \n", buffer_total_size);
+
+    unsigned long long int *h_results_size = new unsigned long long int;
+    CHECK_ERROR(cudaMemcpy((void *)h_results_size, nblb.d_results_size,
+                           sizeof(unsigned long long int),
+                           cudaMemcpyDeviceToHost));
+    std::cout << "Results number: " << *h_results_size << std::endl;
+    if (plo->motivate_worklist_length) {
+      int *h_froniter_end = new int;
+      CHECK_ERROR(cudaMemcpy((void *)h_froniter_end, nblb.d_froniter_end,
+                             sizeof(int), cudaMemcpyDeviceToHost));
+
+      int *h_froniter_length = new int[*h_froniter_end];
+      CHECK_ERROR(cudaMemcpy((void *)h_froniter_length, nblb.d_froniter_length,
+                             sizeof(int) * *h_froniter_end,
+                             cudaMemcpyDeviceToHost));
+
+      std::string path =
+          "/home/tge/workspace/gpunfa-ngap/froniter_length/all/" +
+          plo->app_name + ".txt";
+      std::ofstream froniter_length_file(path);
+      printf("Save froniter length file to %s\n", path.c_str());
+      if (froniter_length_file.is_open()) {
+        for (int i = 0; i < *h_froniter_end; i++) {
+          froniter_length_file << h_froniter_length[i] << "\n";
+        }
+        froniter_length_file.close();
+      } else
+        assert(false);
+      delete[] h_froniter_length;
+    }
+
+    bool validation = plo->validation;
+    if (validation) {
+
+      if (plo->report_off) {
+        unsigned long long int dupnum =
+            plo->duplicate_input_stream > 1 ? plo->duplicate_input_stream : 1;
+        unsigned long long int validation_num = plo->quick_validation * dupnum;
+        if (plo->quick_validation >= 0 && validation_num <= *h_results_size) {
+          if (validation_num == *h_results_size) {
+            tge_log("Quick Validation PASS! (report off, perfect)", BOLDGREEN);
+          } else {
+            tge_log("Quick Validation PASS! (report off, not perfect)",
+                    BOLDGREEN);
+          }
+          passValidation = true;
+          // return throughput;
+        } else {
+          tge_log("Quick Validation FAILED! (report off)", BOLDRED);
+          passValidation = false;
+          // return -1;
+        }
+      } else {
+        uint32_t *h_results_v;
+        uint32_t *h_results_i;
+        uint64_t *h_results = new uint64_t[*h_results_size];
+        if (plo->use_uvm) {
+          h_results_v = nblb.d_results_v;
+          h_results_i = nblb.d_results_i;
+        } else {
+          h_results_v = new uint32_t[*h_results_size];
+          h_results_i = new uint32_t[*h_results_size];
+          CHECK_ERROR(cudaMemcpy((void *)h_results_v, nblb.d_results_v,
+                                 sizeof(uint32_t) * *h_results_size,
+                                 cudaMemcpyDeviceToHost));
+          CHECK_ERROR(cudaMemcpy((void *)h_results_i, nblb.d_results_i,
+                                 sizeof(uint32_t) * *h_results_size,
+                                 cudaMemcpyDeviceToHost));
+        }
+
+        auto addResult = [](uint32_t node, uint32_t index) {
+          uint64_t r = 0;
+          r = (uint32_t)node;
+          r = r << 32;
+          r = r | (uint32_t)index;
+          return r;
+        };
+        for (unsigned long long int i = 0; i < *h_results_size; i++)
+          h_results[i] = addResult(h_results_v[i], h_results_i[i]);
+
+        std::vector<uint64_t> results, ref_results, db_results, ref_db_results;
+        // for (int i = 0; i < *h_results_size; i++)
+        //   results.push_back(h_results[i]);
+        unsigned long long int mc = *h_results_size;
+        results.resize(mc);
+        std::for_each(std::execution::par_unseq, std::begin(results),
+                      std::end(results), [&](uint64_t &r) {
+                        u_int32_t i = &r - &results[0];
+                        assert(i < mc);
+                        results[i] = h_results[i];
+                      });
+        std::sort(std::execution::par_unseq, results.begin(), results.end(),
+                  compareResult);
+        results.erase(std::unique(std::execution::par_unseq, results.begin(),
+                                  results.end()),
+                      results.end());
+        std::cout << "Unique results number: " << results.size() << std::endl;
+        printf("validation start.\n");
+
+        if (plo->quick_validation >= 0) {
+          unsigned long long int dupnum =
+              plo->duplicate_input_stream > 1 ? plo->duplicate_input_stream : 1;
+          unsigned long long int validation_num =
+              plo->quick_validation * dupnum;
+          if (validation_num == results.size()) {
+            tge_log("Quick Validation PASS!", BOLDGREEN);
+            passValidation = true;
+            // return throughput;
+          } else {
+            tge_log("Quick Validation FAILED!", BOLDRED);
+            passValidation = false;
+            // return -1;
+          }
+        } else {
+
+          bool isDup = false;
+          if (plo->duplicate_input_stream > 1 &&
+              (plo->split_chunk_size == -1 ||
+               plo->split_chunk_size == plo->input_len)) {
+            isDup = true;
+          }
+          automataGroupsReference(gs, input_stream->get_host(), num_seg,
+                                  multi_ss_size, &ref_results, &ref_db_results,
+                                  DEBUG_ITER, gcsr, isDup);
+          printf("\n############ Validate result ############ \n");
+          if (automataValidation(&results, &ref_results, true)) {
+            passValidation = true;
+            // return throughput;
+          } else {
+            passValidation = false;
+            // return -1;
+          }
+        }
+
+        if (!plo->use_uvm) {
+          delete[] h_results_v;
+          delete[] h_results_i;
+        }
+        delete[] h_results;
+      }
+    } else {
+      passValidation = true;
+    }
+    delete h_results_size;
+    if (passValidation) {
+      std::cout << "ngap elapsed time: " << milliseconds / 1000.0
+                << " seconds, throughput = " << throughput << " MB/s "
+                << std::endl;
+    } else {
+      std::cout << "ngap elapsed time: " << milliseconds / 1000.0
+                << " seconds, WRONGTHRPUT(" << throughput << ") MB/s "
+                << std::endl;
+    }
+    return throughput;
+  };
+
+  CHECK_LAST_ERROR
+
+  if (plo->tuning == true) {
+    std::vector<int> tuning_fetch_sizes{512,    5120,    10240,   25600,
+                                        256000, 2560000, 25600000};
+    std::vector<int> tuning_add_aas_intervals{4096, 1024, 2048, 1539, 512};
+    std::vector<int> tuning_active_thresholds{0, 8, 16, 24, 32};
+    double max_throughput = -1;
+    std::vector<int> best_choice(3);
+
+    auto tuning_total_start_time = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < tuning_fetch_sizes.size(); i++) {
+      for (int k = 0; k < tuning_active_thresholds.size(); k++) {
+        for (int j = 0; j < tuning_add_aas_intervals.size(); j++) {
+          auto tuning_start_time = std::chrono::high_resolution_clock::now();
+          int fetch_size = tuning_fetch_sizes[i];
+          int add_aas_interval = tuning_add_aas_intervals[j];
+          int active_threshold = tuning_active_thresholds[k];
+          nblb.data_buffer_fetch_size = fetch_size;
+          nblb.add_aas_interval = add_aas_interval;
+          nblb.active_threshold = active_threshold;
+          printf("[Tuning] Try choice: \n   fetch_size=%d, "
+                 "add_aas_interval=%d, active_threshold=%d\n",
+                 fetch_size, add_aas_interval, active_threshold);
+          bool passValidation = true;
+          double throughput = startNonBlockAutomata(passValidation);
+          if (passValidation == true && throughput > 0 &&
+              throughput > max_throughput) {
+            max_throughput = throughput;
+            best_choice = {fetch_size, add_aas_interval, active_threshold};
+            printf(
+                "[Tuning] Update best choice: \n   fetch_size=%d, "
+                "add_aas_interval=%d, active_threshold=%d max_throughput=%f\n",
+                fetch_size, add_aas_interval, active_threshold, max_throughput);
+          } else {
+            printf(
+                "[Tuning] Keep best choice: \n   fetch_size=%d, "
+                "add_aas_interval=%d, active_threshold=%d max_throughput=%f\n",
+                best_choice[0], best_choice[1], best_choice[2], max_throughput);
+          }
+          nblb.reset(input_stream, input_stream->size(), multi_ss_size,
+                     plo->group_num, gs, plo);
+          CHECK_LAST_ERROR
+          auto tuning_end_time = std::chrono::high_resolution_clock::now();
+          auto tuning_duration =
+              std::chrono::duration_cast<std::chrono::microseconds>(
+                  tuning_end_time - tuning_start_time);
+          std::cout << "[Tuning] "
+                    << (double)tuning_duration.count() / 1000000.0
+                    << " seconds\n";
+        }
+      }
+    }
+    auto tuning_total_end_time = std::chrono::high_resolution_clock::now();
+    auto tuning_total_duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            tuning_total_end_time - tuning_total_start_time);
+    std::cout << "[Tuning] Total time: "
+              << (double)tuning_total_duration.count() / 1000000.0
+              << " seconds\n";
+    printf("[Tuning] Tuning completed: the best choice is\n   fetch_size=%d, "
+           "add_aas_interval=%d, active_threshold=%d\n",
+           best_choice[0], best_choice[1], best_choice[2]);
+  } else {
+    bool passValidation = true;
+    startNonBlockAutomata(passValidation);
+    if (!passValidation && plo->try_adaptive_aas) {
+      plo->adaptive_aas = true;
+      printf("Try adaptive aas\n");
+      nblb.release(true);
+      nblb.init_nfagroups(input_stream, input_stream->size(), num_seg,
+                          multi_ss_size, gs, plo);
+      startNonBlockAutomata(passValidation);
+    }
+  }
+
+  nblb.release(true);
+  csr.release();
+  csr.releaseDevice();
+  ms.release();
+
+  gcsr.release();
+  gms.release();
+  gna.release();
+  gaas.release();
+}
+
+
 void ngap::launch_kernel() {}
 
 void ngap::automataReference(Graph &g, uint8_t *input_str, int num_seg,
@@ -2356,7 +4171,8 @@ bool ngap::automataValidation(std::vector<uint64_t> *results,
  */
 
 void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
-                                   int max_depth, bool compressPrecTable) {
+                                   ngap_option *plo, int max_depth,
+                                   bool compressPrecTable) {
   assert(k >= 1);
   if (k >= max_depth)
     return;
@@ -2377,7 +4193,8 @@ void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
           int vertex = vertices[j];
           int e_start = csr.GetNeighborListOffset(vertex);
           int e_end = e_start + csr.GetNeighborListLength(vertex);
-          if (g->node_attrs->get_host()[vertex] & 0b100) {
+          if (plo->remove_loop_edge &&
+              g->node_attrs->get_host()[vertex] & 0b100) {
             if (g->symbol_sets->get_host()[vertex].test(symbol)) {
               vk.push_back(vertex);
               if (g->node_attrs->get_host()[vertex] & 0b10)
@@ -2415,7 +4232,7 @@ void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
           int vertex = vertices[j];
           int e_start = csr.GetNeighborListOffset(vertex);
           int e_end = e_start + csr.GetNeighborListLength(vertex);
-          if (g->node_attrs->get_host()[vertex] & 0b100) {
+          if (plo->remove_loop_edge && g->node_attrs->get_host()[vertex] & 0b100) {
             if (g->symbol_sets->get_host()[vertex].test(symbol)) {
               vk.push_back(vertex);
               if (g->node_attrs->get_host()[vertex] & 0b10)
@@ -2478,10 +4295,11 @@ void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
       std::chrono::duration_cast<std::chrono::microseconds>(end - start);
   current_pt->printHistogram();
   printf("    table_%d_time = %f s\n", k, duration.count() / 1000000.0);
-  recursivePrecomputeForK(csr, g, pts, k + 1, max_depth, compressPrecTable);
+  recursivePrecomputeForK(csr, g, pts, k + 1, plo,  max_depth, compressPrecTable);
 }
 
-int ngap::getPrecomputeResultsForKGroupsInCsr(Csr &csr, Graph *g, int max_depth,
+int ngap::getPrecomputeResultsForKGroupsInCsr(Csr &csr, Graph *g,
+                                              ngap_option *plo, int max_depth,
                                               bool compressPrecTable) {
   int total_size = 0;
   if (max_depth <= 0)
@@ -2503,7 +4321,7 @@ int ngap::getPrecomputeResultsForKGroupsInCsr(Csr &csr, Graph *g, int max_depth,
     pts[0].setResults(symbol, r0);
   }
   pts[0].printHistogram();
-  recursivePrecomputeForK(csr, g, pts, 1, max_depth, compressPrecTable);
+  recursivePrecomputeForK(csr, g, pts, 1, plo, max_depth, compressPrecTable);
 
   for (int i = 0; i < max_depth; i++) {
     pts[i].toDevice(plo->pc_use_uvm);
@@ -2840,44 +4658,44 @@ int ngap::getPrecomputeResultsForKGroupsInCsrFake(Csr &csr, Graph *g,
   return 0;
 }
 
-void ngap::getPrecomputeResultsForK(Csr &csr, NonBlockingBuffer &plb,
-                                    int max_depth) {
-  if (max_depth <= 0)
-    return;
-  PrecTable *pts = new PrecTable[max_depth];
-  pts[0].allocate(256, 0);
-  for (uint symbol = 0; symbol < 256; symbol++) {
-    std::vector<int> v0, r0;
-    for (uint n = 0; n < graph.alwaysActiveNum; n++) {
-      int vertex = graph.always_active_nodes->get_host()[n];
-      if (graph.symbol_sets->get_host()[vertex].test(symbol)) { // filter
-        v0.push_back(vertex);
-        if (graph.node_attrs->get_host()[vertex] & 0b10) { // report
-          r0.push_back(vertex);
-        }
-      }
-    }
-    pts[0].setVertices(symbol, v0);
-    pts[0].setResults(symbol, r0);
-  }
-  recursivePrecomputeForK(csr, &graph, pts, 1, max_depth, false);
+// void ngap::getPrecomputeResultsForK(Csr &csr, NonBlockingBuffer &plb,
+//                                     int max_depth) {
+//   if (max_depth <= 0)
+//     return;
+//   PrecTable *pts = new PrecTable[max_depth];
+//   pts[0].allocate(256, 0);
+//   for (uint symbol = 0; symbol < 256; symbol++) {
+//     std::vector<int> v0, r0;
+//     for (uint n = 0; n < graph.alwaysActiveNum; n++) {
+//       int vertex = graph.always_active_nodes->get_host()[n];
+//       if (graph.symbol_sets->get_host()[vertex].test(symbol)) { // filter
+//         v0.push_back(vertex);
+//         if (graph.node_attrs->get_host()[vertex] & 0b10) { // report
+//           r0.push_back(vertex);
+//         }
+//       }
+//     }
+//     pts[0].setVertices(symbol, v0);
+//     pts[0].setResults(symbol, r0);
+//   }
+//   recursivePrecomputeForK(csr, &graph, pts, 1, max_depth, false);
 
-  for (int i = 0; i < max_depth; i++) {
-    // pts[i].calcCutoffMedian();
-    pts[i].calcCutoff();
-    if (plo->precompute_cutoff >= 0) {
-      printf("Use user-defined precompute_cutoff %d\n", plo->precompute_cutoff);
-      pts[i].cutoff = plo->precompute_cutoff;
-    }
-    pts[i].toDevice(plo->pc_use_uvm);
-  }
-  plb.h_pts = pts;
-  CHECK_ERROR(cudaMalloc((void **)&plb.d_pts, sizeof(PrecTable) * max_depth));
-  CHECK_ERROR(cudaMemcpy((void *)plb.d_pts, pts, sizeof(PrecTable) * max_depth,
-                         cudaMemcpyHostToDevice));
-  plb.precompute_depth = max_depth;
-  printf("plb.precompute_depth=%d\n", plb.precompute_depth);
-}
+//   for (int i = 0; i < max_depth; i++) {
+//     // pts[i].calcCutoffMedian();
+//     pts[i].calcCutoff();
+//     if (plo->precompute_cutoff >= 0) {
+//       printf("Use user-defined precompute_cutoff %d\n", plo->precompute_cutoff);
+//       pts[i].cutoff = plo->precompute_cutoff;
+//     }
+//     pts[i].toDevice(plo->pc_use_uvm);
+//   }
+//   plb.h_pts = pts;
+//   CHECK_ERROR(cudaMalloc((void **)&plb.d_pts, sizeof(PrecTable) * max_depth));
+//   CHECK_ERROR(cudaMemcpy((void *)plb.d_pts, pts, sizeof(PrecTable) * max_depth,
+//                          cudaMemcpyHostToDevice));
+//   plb.precompute_depth = max_depth;
+//   printf("plb.precompute_depth=%d\n", plb.precompute_depth);
+// }
 
 void ngap::getPrecomputeResults(Csr &csr, NonBlockingBuffer &plb) {
   std::vector<int> vv1[256];
@@ -3098,7 +4916,8 @@ void ngap::calculateTheoreticalOccupancy2(T func, int block_size) {
 }
 
 void ngap::initGroupCsrWithPrec(GroupCsr &gscr, std::vector<Graph *> &gs,
-                                int max_depth, bool compressPrecTable) {
+                                ngap_option *plo, int max_depth,
+                                bool compressPrecTable) {
   int total_size = 0;
   gscr.size = gs.size();
   gscr.h_groups_csr = new Csr[gscr.size];
@@ -3110,7 +4929,7 @@ void ngap::initGroupCsrWithPrec(GroupCsr &gscr, std::vector<Graph *> &gs,
     Csr csr(*graph);
     csr.fromCoo(graph->edge_pairs->get_host());
     if (max_depth > 0)
-      total_size += getPrecomputeResultsForKGroupsInCsr(csr, graph, max_depth,
+      total_size += getPrecomputeResultsForKGroupsInCsr(csr, graph, plo, max_depth,
                                                         compressPrecTable);
     csr.moveToDevice();
     gscr.h_groups_csr[i] = csr;

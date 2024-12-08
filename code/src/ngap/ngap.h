@@ -81,6 +81,12 @@ public:
   // OA
   void launch_non_blocking_all();
   void launch_non_blocking_all_groups();
+  // E1
+  void launch_non_blocking_all_e1_groups();
+  // E2
+  void launch_non_blocking_all_e2_groups();
+  // E2p
+  void launch_non_blocking_all_e2p_groups();
 
   void launch_pcsize_groups();
 
@@ -107,13 +113,14 @@ public:
 
   int get_num_segment_per_ss() const { return num_segment_per_ss; }
 
-  void recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
+  void recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,ngap_option *plo,
                                int max_depth, bool compressPrecTable);
 
   void getPrecomputeResults(Csr &csr, NonBlockingBuffer &plb);
-  void getPrecomputeResultsForK(Csr &csr, NonBlockingBuffer &plb,
-                                int max_depth);
-  int getPrecomputeResultsForKGroupsInCsr(Csr &csr, Graph *g, int max_depth,
+  // void getPrecomputeResultsForK(Csr &csr, NonBlockingBuffer &plb,
+  //                               int max_depth);
+  int getPrecomputeResultsForKGroupsInCsr(Csr &csr, Graph *g, ngap_option *plo,
+                                          int max_depth,
                                           bool compressPrecTable);
   int getPrecomputeResultsForKGroupsInCsrFake(Csr &csr, Graph *g, int max_depth,
                                               bool compressPrecTable);
@@ -124,7 +131,8 @@ public:
   void printKernelInfo();
 
   void initGroupCsrWithPrec(GroupCsr &gscr, std::vector<Graph *> &gs,
-                            int max_depth = 0, bool compressPrecTable = true);
+                            ngap_option *plo, int max_depth = 0,
+                            bool compressPrecTable = true);
   void initGroupCsrWithPrecFake(GroupCsr &gscr, std::vector<Graph *> &gs,
                                 int max_depth = 0,
                                 bool compressPrecTable = true);

@@ -67,7 +67,7 @@ static Node *parse_new_state(pugi::xml_node ste) {
 }
 
 
-NFA *load_nfa_from_anml(string filename) {
+NFA *load_nfa_from_anml(string filename, bool remove_loop_edge) {
 
     pugi::xml_document doc;
     if (!doc.load_file(filename.c_str(),pugi::parse_default|pugi::parse_declaration)) {
@@ -115,7 +115,10 @@ NFA *load_nfa_from_anml(string filename) {
               string to_str_id = aom.attribute("element").value();
               if (node_id == to_str_id) { // self loop
                 current_node->segmented_start = true;
-                continue;
+                if (remove_loop_edge) {
+                  // Remove the self loop
+                  continue;
+                }
               }
               nfa->addEdge(current_node->str_id,
                            aom.attribute("element").value());
@@ -168,9 +171,9 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-NFA *load_nfa_from_file(string filename) {
+NFA *load_nfa_from_file(string filename, bool remove_loop_edge) {
     if (has_suffix(filename, ".anml")) {
-        return load_nfa_from_anml(filename);
+        return load_nfa_from_anml(filename, remove_loop_edge);
     } else {
         cout << "Unsupported NFA file type: " << filename << endl;
         exit(-1);

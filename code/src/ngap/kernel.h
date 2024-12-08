@@ -54,4 +54,25 @@ __global__ void advanceAndFilterNonBlockingAllGroups(
     int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,
     GroupAAS gaas, GroupCsr gcsr);
 
+// E1
+template <bool unique, int precompute_depth, bool record_fs, bool adaptive_aas>
+__global__ void advanceAndFilterNonBlockingAllE1Groups(
+    NonBlockingBuffer nblb, uint8_t *arr_input_streams,
+    int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,
+    GroupAAS gaas, GroupCsr gcsr);
+
+// E2
+template <bool unique, int precompute_depth, bool record_fs, bool adaptive_aas>
+__global__ void advanceAndFilterNonBlockingAllE2Groups(
+    NonBlockingBuffer nblb, uint8_t *arr_input_streams,
+    int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,
+    GroupAAS gaas, GroupCsr gcsr);
+
+// E2p
+template <bool unique, int precompute_depth, bool record_fs, bool adaptive_aas>
+__global__ void advanceAndFilterNonBlockingAllE2pGroups(
+    NonBlockingBuffer nblb, uint8_t *arr_input_streams,
+    int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,
+    GroupAAS gaas, GroupCsr gcsr);
+
 #endif

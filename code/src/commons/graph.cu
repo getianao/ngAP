@@ -236,13 +236,13 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
       symbol_table_map.begin(), symbol_table_map.end());
   std::sort(symbol_table_map_sorted.begin(), symbol_table_map_sorted.end(),
             valueComparator);
-  std::cout << "Sorted symbol_table_map by value (descending):" << std::endl;
-  for (int i = 0; i < symbol_table_map_sorted.size(); i++) {
-    std::pair<std::bitset<256>, int> pair = symbol_table_map_sorted[i];
-    std::cout << "symbol_table_id: " << i
-              << " symbol_table bit number: " << pair.first.count()
-              << ", number: " << pair.second << std::endl;
-  }
+  // std::cout << "Sorted symbol_table_map by value (descending):" << std::endl;
+  // for (int i = 0; i < symbol_table_map_sorted.size(); i++) {
+  //   std::pair<std::bitset<256>, int> pair = symbol_table_map_sorted[i];
+  //   std::cout << "symbol_table_id: " << i
+  //             << " symbol_table bit number: " << pair.first.count()
+  //             << ", number: " << pair.second << std::endl;
+  // }
 
   auto get_symbol_set_idx = [&](std::bitset<256> symbol_set) {
     for (int i = 0; i < symbol_table_map_sorted.size(); i++) {

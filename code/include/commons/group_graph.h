@@ -35,17 +35,34 @@ public:
 class GroupMatchset {
 public:
   int size;
-  MatchsetUnique *groups_ms;
+  void *groups_ms;
+  bool use_unique_matchset;
 
-  void init(std::vector<Graph *> &gs, bool use_soa) {
+  void init(std::vector<Graph *> &gs, bool use_unique_matchset, bool use_soa) {
     this->size = gs.size();
-    CHECK_ERROR(cudaMalloc(&groups_ms, sizeof(MatchsetUnique) * size));
+    this->use_unique_matchset = use_unique_matchset;
+
+    uint32_t matchset_size =
+        use_unique_matchset ? sizeof(MatchsetUnique) : sizeof(Matchset);
+    CHECK_ERROR(cudaMalloc(&groups_ms, matchset_size * size));
+
     for (int i = 0; i < size; i++) {
       Graph *graph = gs[i];
-      MatchsetUnique ms = graph->get_matchset_unique_device(
-          graph->symbol_sets_unique->size(), use_soa);
-      CHECK_ERROR(cudaMemcpy((void *)(groups_ms + i), (MatchsetUnique *)&ms,
-                             sizeof(MatchsetUnique), cudaMemcpyHostToDevice));
+      if (!use_unique_matchset) {
+        printf("use normal matchset\n");
+        Matchset ms = graph->get_matchset_device(use_soa);
+        CHECK_ERROR(cudaMemcpy((void *)(static_cast<Matchset *>(groups_ms) + i),
+                               (Matchset *)&ms, sizeof(Matchset),
+                               cudaMemcpyHostToDevice));
+      } else {
+        printf("use unique matchset\n");
+        MatchsetUnique ms = graph->get_matchset_unique_device(
+            graph->symbol_sets_unique->size(), use_soa);
+        CHECK_ERROR(
+            cudaMemcpy((void *)(static_cast<MatchsetUnique *>(groups_ms) + i),
+                       (MatchsetUnique *)&ms, sizeof(MatchsetUnique),
+                       cudaMemcpyHostToDevice));
+      }
     }
   }
 

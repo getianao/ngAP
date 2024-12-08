@@ -13,7 +13,7 @@ advanceAndFilterNonBlockingGroups(NonBlockingBuffer nblb,
                                   GroupNodeAttrs gna, GroupAAS gaas,
                                   GroupCsr gcsr) {
 
-  MatchsetUnique symbol_set = gms.groups_ms[blockIdx.x];
+  Matchset symbol_set = *(static_cast<Matchset *>(gms.groups_ms) + blockIdx.x);
   uint8_t *node_attrs = gna.groups_node_attrs[blockIdx.x];
   int *always_active_nodes = gaas.groups_always_active_states[blockIdx.x];
   Csr csr = gcsr.groups_csr[blockIdx.x];
@@ -133,18 +133,6 @@ advanceAndFilterNonBlockingGroups(NonBlockingBuffer nblb,
               int n_end = n_start + csr.GetNeighborListLength(vertex);
               bool isUnique = ((nblb.unique_frequency <= 0) ||
                                ((offset % nblb.unique_frequency) == 0));
-
-              if (node_attrs[vertex] & 0b100) {
-                if (symbol_set.test(vertex, next_symbol)) {
-                  addToBufferSimple(vertex, iter + 1, d_buffer, d_buffer_idx,
-                                    *d_buffer_start, d_buffer_end_tmp,
-                                    buffer_capacity_per_block);
-                  if (node_attrs[vertex] & 0b10)
-                    addResult2(vertex, iter + 1, d_results_v, d_results_i,
-                               results_size, nblb.results_capacity,
-                               nblb.report_off);
-                }
-              }
               while (n_start < n_end) {
                 int neighbor = csr.d_column_indices[n_start++];
                 if (symbol_set.test(neighbor, next_symbol)) {

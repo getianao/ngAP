@@ -44,8 +44,16 @@ public:
         Opt(try_adaptive_aas, "true/false")["--try-adaptive-aas"](
             "retry when adaptive strategy  failed") |
         Opt(compress_prec_table, "true/false")["--compress-prec-table"](
-            "compress memiozation tables");
-            
+            "compress memiozation tables") |
+        // E1
+        Opt(use_unique_matchset,
+            "true/false")["--use-unique-matchset"]("use unique matchset") |
+        // E2
+        Opt(remove_loop_edge,
+            "true/false")["--remove-loop-edge"]("remove loop edge") |
+        Opt(loop_state_prefetch, "true/false")["--loop-state-prefetch"](
+            "enable loop state prefetch");
+
     parser = parser | additional_parser;
   }
 
@@ -66,6 +74,9 @@ public:
   bool pc_use_uvm = false;
   bool adaptive_aas = false;
   bool try_adaptive_aas = false;
+  bool use_unique_matchset = false;
+  bool remove_loop_edge = false;
+  bool loop_state_prefetch = false;
 };
 
 #endif

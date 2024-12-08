@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
   // cout << "input_stream_size = " << ss.size() << endl;
   auto ab = old_ss.calc_alphabet();
 
-  auto nfa = load_nfa_from_file(automata_filename);
+  auto nfa = load_nfa_from_file(automata_filename, opt.remove_loop_edge);
   nfa_utils::print_nfa_info(nfa);
 
   Graph g;
@@ -114,22 +114,50 @@ int main(int argc, char *argv[]) {
   pl.set_alphabet(ab);
   pl.prepare_original_input_streams(ss);
 
-  if (algo == "blockinggroups") {
-    pl.launch_blocking_groups(); // BAP
-  } else if (algo == "NAPgroups") {
-    pl.launch_non_blocking_nap_groups(); // NAP
-  } else if (algo == "nonblockinggroups") {
-    pl.launch_non_blocking_groups(); // O1
-  } else if (algo == "nonblockingr1groups") {
-    pl.launch_non_blocking_r1_groups(); // O4
-  } else if (algo == "nonblockingr2groups") {
-    pl.launch_non_blocking_r2_groups(); // O4
-  } else if (algo == "nonblockingpcgroups") {
-    pl.launch_non_blocking_prec_groups(); // O3
-  } else if (algo == "nonblockingallgroups") {
-    pl.launch_non_blocking_all_groups(); // OA
+  if (algo == "nonblockingalle1groups") {
+    if (!(opt.use_unique_matchset == true && opt.remove_loop_edge == false &&
+          opt.loop_state_prefetch == false)) {
+      printf("Error: nonblockingalle1groups unsupported option\n");
+      exit(1);
+    }
+    pl.launch_non_blocking_all_e1_groups(); // E1
+  } else if (algo == "nonblockingalle2groups") {
+    if (!(opt.use_unique_matchset == true && opt.remove_loop_edge == true &&
+          opt.loop_state_prefetch == false)) {
+      printf("Error: nonblockingalle2groups unsupported option\n");
+      exit(1);
+    }
+    pl.launch_non_blocking_all_e2_groups(); // E2
+  } else if (algo == "nonblockingalle2pgroups") {
+    if (!(opt.use_unique_matchset == true && opt.remove_loop_edge == true &&
+          opt.loop_state_prefetch == true)) {
+      printf("Error: nonblockingalle2pgroups unsupported option\n");
+      exit(1);
+    }
+    pl.launch_non_blocking_all_e2p_groups(); // E2
   } else {
-    cout << "not supported algoritm " << algo << endl;
+    if (!(opt.use_unique_matchset == false && opt.remove_loop_edge == false &&
+          opt.loop_state_prefetch == false)) {
+      printf("Error: unsupported option\n");
+      exit(1);
+    }
+    if (algo == "blockinggroups") {
+      pl.launch_blocking_groups(); // BAP
+    } else if (algo == "NAPgroups") {
+      pl.launch_non_blocking_nap_groups(); // NAP
+    } else if (algo == "nonblockinggroups") {
+      pl.launch_non_blocking_groups(); // O1
+    } else if (algo == "nonblockingr1groups") {
+      pl.launch_non_blocking_r1_groups(); // O4
+    } else if (algo == "nonblockingr2groups") {
+      pl.launch_non_blocking_r2_groups(); // O4
+    } else if (algo == "nonblockingpcgroups") {
+      pl.launch_non_blocking_prec_groups(); // O3
+    } else if (algo == "nonblockingallgroups") {
+      pl.launch_non_blocking_all_groups(); // OA
+    } else {
+      cout << "not supported algoritm " << algo << endl;
+    }
   }
 
   delete nfa;

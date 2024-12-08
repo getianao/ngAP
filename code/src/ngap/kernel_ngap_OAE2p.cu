@@ -7,12 +7,13 @@ using namespace ngap_nb;
 template <bool unique, int precompute_depth, bool record_fs, bool adaptive_aas>
 __global__ void
 // __launch_bounds__(256, 6)
-advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
+advanceAndFilterNonBlockingAllE2pGroups(NonBlockingBuffer nblb,
                                      uint8_t *arr_input_streams,
                                      int arr_input_streams_size,
                                      GroupMatchset gms, GroupNodeAttrs gna,
                                      GroupAAS gaas, GroupCsr gcsr) {
-  Matchset symbol_set = *(static_cast<Matchset *>(gms.groups_ms) + blockIdx.x);
+  MatchsetUnique symbol_set =
+      *(static_cast<MatchsetUnique *>(gms.groups_ms) + blockIdx.x);
   uint8_t *node_attrs = gna.groups_node_attrs[blockIdx.x];
   int *always_active_nodes = gaas.groups_always_active_states[blockIdx.x];
   Csr csr = gcsr.groups_csr[blockIdx.x];
@@ -59,9 +60,65 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 
   // int max_depth = 1;
   auto processRealVertexR0 = [&](int rvertex, int riter, int depth) {
-    // advance + filter
+    // Last symbol, no need to advance.
     if (riter >= input_bound - 1)
       return;
+
+    // If found loop, add its neighbor until loop node dismatch.
+    if (node_attrs[rvertex] & 0b100) {
+      int riter_loop = riter + 1;
+      uint8_t rsymbol_loop;
+      int rn_start_loop = csr.GetNeighborListOffset(rvertex);
+      int rn_end_loop = rn_start_loop + csr.GetNeighborListLength(rvertex);
+      const int is_loop_report = node_attrs[rvertex] & 0b10;
+      const int loop_limit = 4;
+
+      while (riter_loop <= input_bound - 1) {
+        int rn_start = rn_start_loop;
+        int rn_end = rn_end_loop;
+        rsymbol_loop = arr_input_streams[riter_loop];
+        // Match next symbol with fixed rneighbor.
+        while (rn_start < rn_end) {
+          int rneighbor = csr.d_column_indices[rn_start++];
+          if (symbol_set.test(rneighbor, rsymbol_loop)) {
+            addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+            if (node_attrs[rneighbor] & 0b10)
+              addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+          }
+        }
+        if (symbol_set.test(rvertex, rsymbol_loop)) {
+          if (is_loop_report)
+            addResult2(rvertex, riter_loop, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+          //  Divergence strategy
+          // if (riter_loop - riter > loop_limit) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+          // if (__popc(__activemask()) < 16) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+        } else {
+          break;
+        }
+        riter_loop++;
+      }
+      // __syncwarp(0xFFFFFFFF);
+      // if (blockIdx.x == 0 && threadIdx.x < 32) {
+      //   printf("tid: %d, loop length=%d\n", threadIdx.x, riter_loop - riter);
+      // }
+      return; // Skip its neighbor.
+    }
+
+    // advance + filter
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
@@ -95,9 +152,65 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 
   auto processRealVertexR1 = [&](int rvertex, int riter, int depth,
                                  bool isUnique) {
-    // advance + filter
+    // Last symbol, no need to advance.
     if (riter >= input_bound - 1)
       return;
+
+    // If found loop, add its neighbor until loop node dismatch.
+    if (node_attrs[rvertex] & 0b100) {
+      int riter_loop = riter + 1;
+      uint8_t rsymbol_loop;
+      int rn_start_loop = csr.GetNeighborListOffset(rvertex);
+      int rn_end_loop = rn_start_loop + csr.GetNeighborListLength(rvertex);
+      const int is_loop_report = node_attrs[rvertex] & 0b10;
+      const int loop_limit = 4;
+
+      while (riter_loop <= input_bound - 1) {
+        int rn_start = rn_start_loop;
+        int rn_end = rn_end_loop;
+        rsymbol_loop = arr_input_streams[riter_loop];
+        // Match next symbol with fixed rneighbor.
+        while (rn_start < rn_end) {
+          int rneighbor = csr.d_column_indices[rn_start++];
+          if (symbol_set.test(rneighbor, rsymbol_loop)) {
+            addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+            if (node_attrs[rneighbor] & 0b10)
+              addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+          }
+        }
+        if (symbol_set.test(rvertex, rsymbol_loop)) {
+          if (is_loop_report)
+            addResult2(rvertex, riter_loop, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+          //  Divergence strategy
+          // if (riter_loop - riter > loop_limit) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+          // if (__popc(__activemask()) < 16) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+        } else {
+          break;
+        }
+        riter_loop++;
+      }
+      // __syncwarp(0xFFFFFFFF);
+      // if (blockIdx.x == 0 && threadIdx.x < 32) {
+      //   printf("tid: %d, loop length=%d\n", threadIdx.x, riter_loop - riter);
+      // }
+      return; // Skip its neighbor.
+    }
+
+    // advance + filter
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
@@ -373,45 +486,45 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
   }
 }
 
-#define __advanceAndFilterNonBlockingAllGroups(T1, T2, T3, T4)                 \
+#define __advanceAndFilterNonBlockingAllE2pGroups(T1, T2, T3, T4)           \
   template __global__ void                                                     \
-  advanceAndFilterNonBlockingAllGroups<T1, T2, T3, T4>(                        \
+  advanceAndFilterNonBlockingAllE2pGroups<T1, T2, T3, T4>(                  \
       NonBlockingBuffer nblb, uint8_t * arr_input_streams,                     \
       int arr_input_streams_size, GroupMatchset gms, GroupNodeAttrs gna,       \
       GroupAAS gaas, GroupCsr gcsr);
 
-__advanceAndFilterNonBlockingAllGroups(false, 0, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 0, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 0, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 0, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 0, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 0, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 0, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 0, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 0, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 0, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 0, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 0, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 0, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 0, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 0, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 0, true, true);
 
-__advanceAndFilterNonBlockingAllGroups(false, 1, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 1, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 1, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 1, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 1, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 1, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 1, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 1, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 1, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 1, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 1, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 1, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 1, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 1, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 1, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 1, true, true);
 
-__advanceAndFilterNonBlockingAllGroups(false, 2, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 2, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 2, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 2, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 2, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 2, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 2, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 2, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 2, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 2, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 2, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 2, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 2, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 2, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 2, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 2, true, true);
 
-__advanceAndFilterNonBlockingAllGroups(false, 3, false, false);
-__advanceAndFilterNonBlockingAllGroups(true, 3, false, false);
-__advanceAndFilterNonBlockingAllGroups(false, 3, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 3, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 3, true, false);
-__advanceAndFilterNonBlockingAllGroups(false, 3, true, true);
-__advanceAndFilterNonBlockingAllGroups(true, 3, false, true);
-__advanceAndFilterNonBlockingAllGroups(true, 3, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 3, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 3, false, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 3, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 3, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 3, true, false);
+__advanceAndFilterNonBlockingAllE2pGroups(false, 3, true, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 3, false, true);
+__advanceAndFilterNonBlockingAllE2pGroups(true, 3, true, true);
