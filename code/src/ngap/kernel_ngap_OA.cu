@@ -59,22 +59,68 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 
   // int max_depth = 1;
   auto processRealVertexR0 = [&](int rvertex, int riter, int depth) {
-    // advance + filter
+    // Last symbol, no need to advance.
     if (riter >= input_bound - 1)
       return;
+
+    // If found loop, add its neighbor until loop node dismatch.
+    if (node_attrs[rvertex] & 0b100) {
+      int riter_loop = riter + 1;
+      uint8_t rsymbol_loop;
+      int rn_start_loop = csr.GetNeighborListOffset(rvertex);
+      int rn_end_loop = rn_start_loop + csr.GetNeighborListLength(rvertex);
+      const int is_loop_report = node_attrs[rvertex] & 0b10;
+      const int loop_limit = 4;
+
+      while (riter_loop <= input_bound - 1) {
+        int rn_start = rn_start_loop;
+        int rn_end = rn_end_loop;
+        rsymbol_loop = arr_input_streams[riter_loop];
+        // Match next symbol with fixed rneighbor.
+        while (rn_start < rn_end) {
+          int rneighbor = csr.d_column_indices[rn_start++];
+          if (symbol_set.test(rneighbor, rsymbol_loop)) {
+            addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+            if (node_attrs[rneighbor] & 0b10)
+              addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+          }
+        }
+        if (symbol_set.test(rvertex, rsymbol_loop)) {
+          if (is_loop_report)
+            addResult2(rvertex, riter_loop, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+          //  Divergence strategy
+          // if (riter_loop - riter > loop_limit) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+          // if (__popc(__activemask()) < 16) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+        } else {
+          break;
+        }
+        riter_loop++;
+      }
+      // __syncwarp(0xFFFFFFFF);
+      // if (blockIdx.x == 0 && threadIdx.x < 32) {
+      //   printf("tid: %d, loop length=%d\n", threadIdx.x, riter_loop - riter);
+      // }
+      return; // Skip its neighbor.
+    }
+
+    // advance + filter
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
-    if (node_attrs[rvertex] & 0b100) {
-      if (symbol_set.test(rvertex, rsymbol)) {
-        addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
-                          *d_buffer_start, d_buffer_end_tmp,
-                          buffer_capacity_per_block);
-        if (node_attrs[rvertex] & 0b10)
-          addResult2(rvertex, riter + 1, d_results_v, d_results_i, results_size,
-                     nblb.results_capacity, nblb.report_off);
-      }
-    }
     // #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
@@ -105,22 +151,68 @@ advanceAndFilterNonBlockingAllGroups(NonBlockingBuffer nblb,
 
   auto processRealVertexR1 = [&](int rvertex, int riter, int depth,
                                  bool isUnique) {
-    // advance + filter
+    // Last symbol, no need to advance.
     if (riter >= input_bound - 1)
       return;
+
+    // If found loop, add its neighbor until loop node dismatch.
+    if (node_attrs[rvertex] & 0b100) {
+      int riter_loop = riter + 1;
+      uint8_t rsymbol_loop;
+      int rn_start_loop = csr.GetNeighborListOffset(rvertex);
+      int rn_end_loop = rn_start_loop + csr.GetNeighborListLength(rvertex);
+      const int is_loop_report = node_attrs[rvertex] & 0b10;
+      const int loop_limit = 4;
+
+      while (riter_loop <= input_bound - 1) {
+        int rn_start = rn_start_loop;
+        int rn_end = rn_end_loop;
+        rsymbol_loop = arr_input_streams[riter_loop];
+        // Match next symbol with fixed rneighbor.
+        while (rn_start < rn_end) {
+          int rneighbor = csr.d_column_indices[rn_start++];
+          if (symbol_set.test(rneighbor, rsymbol_loop)) {
+            addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+            if (node_attrs[rneighbor] & 0b10)
+              addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+          }
+        }
+        if (symbol_set.test(rvertex, rsymbol_loop)) {
+          if (is_loop_report)
+            addResult2(rvertex, riter_loop, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+          //  Divergence strategy
+          // if (riter_loop - riter > loop_limit) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+          // if (__popc(__activemask()) < 16) {
+          //   addToBufferSimple(rvertex, riter_loop, d_buffer, d_buffer_idx,
+          //                     *d_buffer_start, d_buffer_end_tmp,
+          //                     buffer_capacity_per_block);
+          //   break;
+          // }
+        } else {
+          break;
+        }
+        riter_loop++;
+      }
+      // __syncwarp(0xFFFFFFFF);
+      // if (blockIdx.x == 0 && threadIdx.x < 32) {
+      //   printf("tid: %d, loop length=%d\n", threadIdx.x, riter_loop - riter);
+      // }
+      return; // Skip its neighbor.
+    }
+
+    // advance + filter
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
-    if (node_attrs[rvertex] & 0b100) {
-      if (symbol_set.test(rvertex, rsymbol)) {
-        addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
-                          *d_buffer_start, d_buffer_end_tmp,
-                          buffer_capacity_per_block);
-        if (node_attrs[rvertex] & 0b10)
-          addResult2(rvertex, riter + 1, d_results_v, d_results_i, results_size,
-                     nblb.results_capacity, nblb.report_off);
-      }
-    }
 #pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
