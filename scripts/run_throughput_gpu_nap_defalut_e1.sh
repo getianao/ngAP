@@ -5,7 +5,7 @@ cd ${DIR}
 
 VALI=--validation
 
-mkdir -p ./results/raw/throughput_gpu_nap_default_adp_e1
+mkdir -p ../results/raw/throughput_gpu_nap_default_adp_e1
 
 # config: [NAP-default], apps: [part 1, part 2]
 APPS="app_spec_ngap_new_quickvalidation_part1" \
