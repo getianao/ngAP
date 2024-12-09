@@ -65,13 +65,14 @@ advanceAndFilterNonBlockingAllE2pGroups(NonBlockingBuffer nblb,
       return;
 
     // If found loop, add its neighbor until loop node dismatch.
-    if (node_attrs[rvertex] & 0b100) {
+    uint8_t node_attr = node_attrs[rvertex];
+    if (node_attr & 0b100) {
       int riter_loop = riter + 1;
       uint8_t rsymbol_loop;
       int rn_start_loop = csr.GetNeighborListOffset(rvertex);
       int rn_end_loop = rn_start_loop + csr.GetNeighborListLength(rvertex);
-      const int is_loop_report = node_attrs[rvertex] & 0b10;
-      const int loop_limit = 4;
+      const int is_loop_report = node_attr & 0b10;
+      const int loop_limit = 0;
 
       while (riter_loop <= input_bound - 1) {
         int rn_start = rn_start_loop;
@@ -81,12 +82,28 @@ advanceAndFilterNonBlockingAllE2pGroups(NonBlockingBuffer nblb,
         while (rn_start < rn_end) {
           int rneighbor = csr.d_column_indices[rn_start++];
           if (symbol_set.test(rneighbor, rsymbol_loop)) {
-            addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
-                              *d_buffer_start, d_buffer_end_tmp,
-                              buffer_capacity_per_block);
-            if (node_attrs[rneighbor] & 0b10)
-              addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
-                         results_size, nblb.results_capacity, nblb.report_off);
+            if (false) {
+              int mask1 =
+                  __match_any_sync(__activemask(), getResult(rneighbor, riter_loop));
+              int leader = __ffs(mask1) - 1;
+              if (threadIdx.x % 32 == leader) {
+                addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
+                                  *d_buffer_start, d_buffer_end_tmp,
+                                  buffer_capacity_per_block);
+                if (node_attrs[rneighbor] & 0b10)
+                  addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                             results_size, nblb.results_capacity,
+                             nblb.report_off);
+              }
+            } else {
+              addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
+                                *d_buffer_start, d_buffer_end_tmp,
+                                buffer_capacity_per_block);
+              if (node_attrs[rneighbor] & 0b10)
+                addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                           results_size, nblb.results_capacity,
+                           nblb.report_off);
+            }
           }
         }
         if (symbol_set.test(rvertex, rsymbol_loop)) {
@@ -157,13 +174,14 @@ advanceAndFilterNonBlockingAllE2pGroups(NonBlockingBuffer nblb,
       return;
 
     // If found loop, add its neighbor until loop node dismatch.
-    if (node_attrs[rvertex] & 0b100) {
+    uint8_t node_attr = node_attrs[rvertex];
+    if (node_attr & 0b100) {
       int riter_loop = riter + 1;
       uint8_t rsymbol_loop;
       int rn_start_loop = csr.GetNeighborListOffset(rvertex);
       int rn_end_loop = rn_start_loop + csr.GetNeighborListLength(rvertex);
-      const int is_loop_report = node_attrs[rvertex] & 0b10;
-      const int loop_limit = 4;
+      const int is_loop_report = node_attr & 0b10;
+      const int loop_limit = 0;
 
       while (riter_loop <= input_bound - 1) {
         int rn_start = rn_start_loop;
@@ -173,12 +191,37 @@ advanceAndFilterNonBlockingAllE2pGroups(NonBlockingBuffer nblb,
         while (rn_start < rn_end) {
           int rneighbor = csr.d_column_indices[rn_start++];
           if (symbol_set.test(rneighbor, rsymbol_loop)) {
-            addToBufferSimple(rneighbor, riter_loop, d_buffer, d_buffer_idx,
-                              *d_buffer_start, d_buffer_end_tmp,
-                              buffer_capacity_per_block);
-            if (node_attrs[rneighbor] & 0b10)
-              addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
-                         results_size, nblb.results_capacity, nblb.report_off);
+            if (unique && isUnique) {
+              int mask1 = __match_any_sync(__activemask(),
+                                           getResult(rneighbor, riter_loop));
+              int leader = __ffs(mask1) - 1;
+              if (threadIdx.x % 32 == leader) {
+                if (node_attrs[rneighbor] & 0b10)
+                  addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                             results_size, nblb.results_capacity,
+                             nblb.report_off);
+                if (__popc(__activemask()) <= nblb.active_threshold) {
+                  addToBufferSimple(rneighbor, riter_loop, d_buffer,
+                                    d_buffer_idx, *d_buffer_start,
+                                    d_buffer_end_tmp,
+                                    buffer_capacity_per_block);
+                } else {
+                  processRealVertexR0(rneighbor, riter_loop, depth + 1);
+                }
+              }
+            } else {
+              if (node_attrs[rneighbor] & 0b10)
+                addResult2(rneighbor, riter_loop, d_results_v, d_results_i,
+                           results_size, nblb.results_capacity,
+                           nblb.report_off);
+              if (__popc(__activemask()) <= nblb.active_threshold) {
+                addToBufferSimple(rneighbor, riter_loop, d_buffer,
+                                  d_buffer_idx, *d_buffer_start,
+                                  d_buffer_end_tmp, buffer_capacity_per_block);
+              } else {
+                processRealVertexR0(rneighbor, riter_loop, depth + 1);
+              }
+            }
           }
         }
         if (symbol_set.test(rvertex, rsymbol_loop)) {

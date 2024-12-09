@@ -68,14 +68,29 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
-    if (node_attrs[rvertex] & 0b100) {
+    uint8_t node_attr = node_attrs[rvertex];
+    if (node_attr & 0b100) {
       if (symbol_set.test(rvertex, rsymbol)) {
-        addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
-                          *d_buffer_start, d_buffer_end_tmp,
-                          buffer_capacity_per_block);
-        if (node_attrs[rvertex] & 0b10)
-          addResult2(rvertex, riter + 1, d_results_v, d_results_i, results_size,
-                     nblb.results_capacity, nblb.report_off);
+        if (false) {
+          int mask1 =
+              __match_any_sync(__activemask(), getResult(rvertex, riter));
+          int leader = __ffs(mask1) - 1;
+          if (threadIdx.x % 32 == leader) {
+            addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+            if (node_attr & 0b10)
+              addResult2(rvertex, riter + 1, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+          }
+        } else {
+          addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
+                            *d_buffer_start, d_buffer_end_tmp,
+                            buffer_capacity_per_block);
+          if (node_attr & 0b10)
+            addResult2(rvertex, riter + 1, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+        }
       }
     }
     // #pragma unroll 4
@@ -116,14 +131,37 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
-    if (node_attrs[rvertex] & 0b100) {
+    uint8_t node_attr = node_attrs[rvertex];
+    if (node_attr & 0b100) {
       if (symbol_set.test(rvertex, rsymbol)) {
-        addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
-                          *d_buffer_start, d_buffer_end_tmp,
-                          buffer_capacity_per_block);
-        if (node_attrs[rvertex] & 0b10)
-          addResult2(rvertex, riter + 1, d_results_v, d_results_i, results_size,
-                     nblb.results_capacity, nblb.report_off);
+        if (unique && isUnique) {
+          int mask1 =
+              __match_any_sync(__activemask(), getResult(rvertex, riter));
+          int leader = __ffs(mask1) - 1;
+          if (threadIdx.x % 32 == leader) {
+            if (node_attr & 0b10)
+              addResult2(rvertex, riter + 1, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+            if (__popc(__activemask()) <= nblb.active_threshold) {
+              addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
+                                *d_buffer_start, d_buffer_end_tmp,
+                                buffer_capacity_per_block);
+            } else {
+              processRealVertexR0(rvertex, riter + 1, depth + 1);
+            }
+          }
+        } else {
+          if (node_attr & 0b10)
+            addResult2(rvertex, riter + 1, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+          if (__popc(__activemask()) <= nblb.active_threshold) {
+            addToBufferSimple(rvertex, riter + 1, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+          } else {
+            processRealVertexR0(rvertex, riter + 1, depth + 1);
+          }
+        }
       }
     }
 #pragma unroll 2
