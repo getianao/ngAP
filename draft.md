@@ -86,3 +86,9 @@ kernel_ngap_OAE2p:  --use-unique-matchset=true --remove-loop-edge=true --loop-st
 ngap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Brill/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Brill/benchmarks/inputs/brown_corpus.txt --app-name=Brill  --algorithm=nonblockingalle2pgroups  --input-start-pos=0  --input-len=1000000  --split-entire-inputstream-to-chunk-size=1000000  --group-num=1  --duplicate-input-stream=600  --unique=false  --unique-frequency=10  --use-soa=false  --result-capacity=54619400  --use-uvm=false  --data-buffer-fetch-size=25600  --add-aan-start=256  --add-aas-interval=1000000  --active-threshold=0  --precompute-cutoff=-1  --precompute-depth=3  --compress-prec-table=true  --pc-use-uvm=false  --report-off=false  --remove-degree=false  --quit-degree=false  --max-nfa-size=-1  --adaptive-aas=true --quick-validation=9038877 --validation=true --use-unique-matchset=true --remove-loop-edge=true --loop-state-prefetch=true
 
 
+time ${NGAP_ROOT}/scripts/run-throughput-extend.sh
+
+${NGAP_ROOT}/scripts/gen-throughput-extend.sh
+python scripts/plot_motivation_e1.py
+python scripts/plot_motivation_e2.py
+
