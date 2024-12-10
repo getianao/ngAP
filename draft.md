@@ -89,6 +89,8 @@ ngap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Brill/b
 time ${NGAP_ROOT}/scripts/run-throughput-extend.sh
 
 ${NGAP_ROOT}/scripts/gen-throughput-extend.sh
-python scripts/plot_motivation_e1.py
-python scripts/plot_motivation_e2.py
+
+python ${NGAP_ROOT}/scripts/plot_throughput_gpu_sota_extend.py
+python ${NGAP_ROOT}/scripts/plot_motivation_e1.py
+python ${NGAP_ROOT}/scripts/plot_motivation_e2.py
 

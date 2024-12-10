@@ -38,7 +38,10 @@ configs_dict = {
     "oa-nonblocking-default-256-best": ["ngAP-default-256", 63.3],
     
     "oa-nonblocking-all-best-uncomp": ["ngAP-Best-Uncomp", 63.6],
-    "oa-nonblocking-all-best": ["ngAP-best", 64],
+    
+    "oa-nonblocking-all-best-e2": ["ngAP-best-e2", 101],
+    "oa-nonblocking-all-best": ["ngAP-best", 100],
+    
     "o0-blocking-breakdown_": ["BAP", 81],
     "o0-nonblocking-NAP-breakdown_": ["ngAP", 82],
     "o1-nonblocking-breakdown_": ["ngAP+$\mathregular{O^1}$", 83],
@@ -153,7 +156,7 @@ def plot(data_paths, figurePath, ylabel):
         xyConfig={
             "xylabel": ["", ylabel],
             "xlim": [None, None],
-            "ylim": [0, 3],
+            "ylim": [0, 2],
             "labelExceedYlim": True,
             "xyscale": [None, None],
             "showxyTicksLabel": [True, True],
@@ -187,15 +190,17 @@ if __name__ == "__main__":
     path1 = result_folder+"/raw/throughput_gpu_nap_default_adp"
     path2 = result_folder+"/raw/throughput_gpu_nap_default_adp_e1"
     path3 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2"
-    path4 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2p"
+    path5 = result_folder+"/raw/throughput_gpu_nap_best"
+    path6 = result_folder+"/raw/throughput_gpu_nap_best_e2"
     paths = []
     # paths.append(path0)
     paths.append(path1)
     paths.append(path2)
     paths.append(path3)
-    paths.append(path4)
+    paths.append(path5)
+    paths.append(path6)
     plot(
         data_paths=paths,
-        figurePath=result_folder+"extend_throughput.pdf",
+        figurePath=result_folder+"throughput_extend.pdf",
         ylabel="Throughput\nNormalized to ngAP-default",
     )

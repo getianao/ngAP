@@ -5,4 +5,4 @@ time ${NGAP_ROOT}/scripts/run_throughput_gpu_nap_defalut_e2.sh
 time ${NGAP_ROOT}/scripts/run_throughput_gpu_nap_best_e2.sh
 
 time ${NGAP_ROOT}/scripts/run_throughput_gpu_nap_best.sh
-# time ${NGAP_ROOT}/scripts/run_throughput_gpu_nap_defalut.sh
+time ${NGAP_ROOT}/scripts/run_throughput_gpu_nap_defalut.sh

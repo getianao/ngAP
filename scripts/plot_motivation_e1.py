@@ -136,6 +136,7 @@ def plot(path_list, figurePath, ylabel):
 
     # data.columns = data.loc['App']
     # data = data.drop('App', axis=0)
+    data = data * 100
     data = data.set_index("App")
     print(data)
     # data = figurePlotter.merge_columns(data, configs_groups, configs_groups_names)
@@ -153,6 +154,7 @@ def plot(path_list, figurePath, ylabel):
     # save_to_csv(data, figurePath)
 
     colorPalette = [
+        "#7db6d4",
         "#ffdc6d",
         "#a0cc82",
         "#4c95cb",
@@ -167,20 +169,21 @@ def plot(path_list, figurePath, ylabel):
         apps_labels,
         configs_labels,
         data.values,
-        plotSize=(15, 2.2),
+        plotSize=(7.5, 2.2),
         filename=figurePath,
         groupsInterval=0.15,
         colorPalette=colorPalette,
         colorHatch=colorHatch,
+        plotNormalizedLine=False,
         xyConfig={
             "xylabel": ["", ylabel],
             "xlim": [None, None],
-            "ylim": [0, 1],
+            "ylim": [0, 100],
             "labelExceedYlim": True,
             "xyscale": [None, None],
             "showxyTicksLabel": [True, True],
             "xyticksRotation": [30, 0],
-            "xyticksMajorLocator": [None, 1],
+            "xyticksMajorLocator": [None, 20],
         },
         averageConfig={
             "plotAverage": True,
@@ -210,4 +213,4 @@ if __name__ == "__main__":
     # paths.append(path2)
     plot(path_list=paths,
          figurePath=result_folder+"motivation_e1.pdf",
-         ylabel="reduntant symbol set ratio")
+         ylabel="Reduntant Symbol-set Ratio (%)")
