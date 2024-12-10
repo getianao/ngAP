@@ -3,7 +3,6 @@
 
 #include <thrust/device_ptr.h>
 #include <thrust/fill.h>
-#include "graph.h"
 
 namespace ngap_nb {
 
@@ -136,22 +135,6 @@ printIndexQueue(int *queueIndexStart, uint length, int &iter_id) {
   printf("%d(%d), ", queueIndexStart[length - 1], length - start);
   printf("\n");
   iter_id++;
-}
-
-__device__ __forceinline__ static bool
-local_test(uint32_t *d_data, uint16_t *matchsetidx, int vertex, int symbol) {
-  vertex = matchsetidx[vertex];
-  return *(d_data + vertex * 8 + (symbol / 32)) & (1 << (symbol % 32));
-}
-
-__device__ __forceinline__ static bool
-auto_test(bool use_shared_symbol_set, MatchsetUnique symbol_set,
-          uint32_t *d_data, uint16_t *matchsetidx, int vertex, int symbol) {
-  if (use_shared_symbol_set) {
-    vertex = matchsetidx[vertex];
-    return *(d_data + vertex * 8 + (symbol / 32)) & (1 << (symbol % 32));
-  }
-  return symbol_set.test(vertex, symbol);
 }
 
 } // namespace ngap_nb

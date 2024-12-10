@@ -14,17 +14,6 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
                                      GroupAAS gaas, GroupCsr gcsr) {
   MatchsetUnique symbol_set =
       *(static_cast<MatchsetUnique *>(gms.groups_ms) + blockIdx.x);
-  uint16_t *matchsetidx = symbol_set.matchsetidx;
-
-  bool use_shared_symbol_set = symbol_set.size < 256;
-  __shared__ uint32_t local_symbol_set[2048]; // 8KB = 2048 * 4, 2048/8 = 256
-  if (use_shared_symbol_set) {
-    for (int i = threadIdx.x; i < symbol_set.size * 8; i += blockDim.x) {
-      local_symbol_set[i] = symbol_set.d_data[i];
-    }
-  }
-  __syncthreads();
-
   uint8_t *node_attrs = gna.groups_node_attrs[blockIdx.x];
   int *always_active_nodes = gaas.groups_always_active_states[blockIdx.x];
   Csr csr = gcsr.groups_csr[blockIdx.x];
@@ -81,7 +70,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
     uint8_t node_attr = node_attrs[rvertex];
     if (node_attr & 0b100) {
-      if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, rvertex, rsymbol)) {
+      if (symbol_set.test(rvertex, rsymbol)) {
         if (false) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rvertex, riter));
@@ -106,7 +95,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     }
     if (node_attr & 0b1000) {
       int rneighbor_e = rvertex + 1;
-      if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, rneighbor_e, rsymbol)) {
+      if (symbol_set.test(rneighbor_e, rsymbol)) {
         if (false) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor_e, riter));
@@ -132,7 +121,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     // #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
-      if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, rneighbor, rsymbol)) {
+      if (symbol_set.test(rneighbor, rsymbol)) {
         if (false) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor, riter));
@@ -169,7 +158,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
     uint8_t node_attr = node_attrs[rvertex];
     if (node_attr & 0b100) {
-      if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, rvertex, rsymbol)) {
+      if (symbol_set.test(rvertex, rsymbol)) {
         if (unique && isUnique) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rvertex, riter));
@@ -202,7 +191,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
     }
     if (node_attr & 0b1000) {
       int rneighbor_e = rvertex + 1;
-      if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, rneighbor_e, rsymbol)) {
+      if (symbol_set.test(rneighbor_e, rsymbol)) {
         if (unique && isUnique) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor_e, riter));
@@ -236,7 +225,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
 #pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
-      if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, rneighbor, rsymbol)) {
+      if (symbol_set.test(rneighbor, rsymbol)) {
         if (unique && isUnique) {
           int mask1 =
               __match_any_sync(__activemask(), getResult(rneighbor, riter));
@@ -361,7 +350,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
               uint8_t symbol = arr_input_streams[iter];
               for (int i = 0; i < csr.alwaysActiveNum; i++) {
                 int aan = always_active_nodes[i];
-                if (auto_test(use_shared_symbol_set, symbol_set, local_symbol_set, matchsetidx, aan, symbol)) {
+                if (symbol_set.test(aan, symbol)) {
                   addToBufferSimple(aan, iter, d_buffer, d_buffer_idx,
                                     *d_buffer_start, d_buffer_end_tmp,
                                     buffer_capacity_per_block);
