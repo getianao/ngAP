@@ -145,7 +145,7 @@ public:
   Array2<uint16_t> *node2matchsetidx;
 
   cudaError_t ReadANML(std::string filename);
-  cudaError_t ReadNFA(NFA *nfa);
+  cudaError_t ReadNFA(NFA *nfa, bool remove_edge = false);
   cudaError_t allocate(int nodesNum, int edgesNum, int alwaysActiveNum,
                        int startActiveNum);
   cudaError_t release();

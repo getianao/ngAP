@@ -56,6 +56,8 @@ public:
                                cudaMemcpyHostToDevice));
       } else {
         printf("use unique matchset\n");
+        printf("symbol_sets_unique size: %d\n",
+               graph->symbol_sets_unique->size());
         MatchsetUnique ms = graph->get_matchset_unique_device(
             graph->symbol_sets_unique->size(), use_soa);
         CHECK_ERROR(

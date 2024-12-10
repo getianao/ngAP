@@ -183,7 +183,7 @@ bool valueComparator(const std::pair<std::bitset<256>, int> &a,
   return a.second > b.second;
 }
 
-cudaError_t Graph::ReadNFA(NFA *nfa) {
+cudaError_t Graph::ReadNFA(NFA *nfa, bool remove_edge) {
   cudaError_t retval = cudaSuccess;
   std::unordered_map<std::bitset<256>, int, BitsetHash, BitsetEqual> symbol_table_map;
 
@@ -224,17 +224,19 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
     for (int j = 0; j < nfa->adj[node->str_id].size(); j++) {
       int x = i;
       int y = nfa->get_node_by_str_id(nfa->adj[node->str_id][j])->sid;
-      if (x == y) {
-        node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 2));
-        edgesNum--;
-        edge_self++;
-        continue;
-      }
-      if (x + 1 == y) {
-        node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 3));
-        edgesNum--;
-        edge_next++;
-        continue;
+      if (remove_edge) {
+        if (x == y) {
+          node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 2));
+          edgesNum--;
+          edge_self++;
+          continue;
+        }
+        if (x + 1 == y) {
+          node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 3));
+          edgesNum--;
+          edge_next++;
+          continue;
+        }
       }
 
       edge_pairs->get_host()[edgeIndex].x = x;
@@ -382,7 +384,10 @@ void Graph::print_nfa_info() {
   std::cout << "    Edges: " << edgesNum << std::endl;
   std::cout << "    Self Edges: " << edge_self << std::endl;
   std::cout << "    Next Edges: " << edge_next << std::endl;
-  std::cout << "    Always Active Nodes: " << alwaysActiveNum << std::endl;
+  std::cout << "    remove_edge_prec: "
+            << (edge_self + edge_next) /
+                   (float)(edgesNum + edge_self + edge_next)
+            << std::endl;
   std::cout << "    Start Active Nodes: " << startActiveNum << std::endl;
   std::cout << "    Reporting States: " << reportingStateNum << std::endl;
 }

@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
   Graph g;
   // g.ReadANML(automata_filename);
-  g.ReadNFA(nfa);
+  g.ReadNFA(nfa, opt.remove_loop_edge);
   g.print_nfa_info();
   printf("ReadANML finish \n");
   g.copyToDevice();
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   std::vector<Graph *> gs;
   for (auto nfa : grouped_nfas) {
     Graph *g = new Graph();
-    g->ReadNFA(nfa);
+    g->ReadNFA(nfa, opt.remove_loop_edge);
     g->copyToDevice();
     gs.push_back(g);
   }
