@@ -4201,6 +4201,15 @@ void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
                 rk.push_back(vertex);
             }
           }
+          if (plo->remove_loop_edge &&
+              g->node_attrs->get_host()[vertex] & 0b1000) {
+            int vertex_e = vertex + 1;
+            if (g->symbol_sets->get_host()[vertex_e].test(symbol)) {
+              vk.push_back(vertex_e);
+              if (g->node_attrs->get_host()[vertex_e] & 0b10)
+                rk.push_back(vertex_e);
+            }
+          }
           for (int e = e_start; e < e_end; e++) { // advance
             int child = csr.GetEdgeDest(e);
             if (g->symbol_sets->get_host()[child].test(symbol)) { // filter
@@ -4232,11 +4241,21 @@ void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
           int vertex = vertices[j];
           int e_start = csr.GetNeighborListOffset(vertex);
           int e_end = e_start + csr.GetNeighborListLength(vertex);
-          if (plo->remove_loop_edge && g->node_attrs->get_host()[vertex] & 0b100) {
+          if (plo->remove_loop_edge &&
+              g->node_attrs->get_host()[vertex] & 0b100) {
             if (g->symbol_sets->get_host()[vertex].test(symbol)) {
               vk.push_back(vertex);
               if (g->node_attrs->get_host()[vertex] & 0b10)
                 rk.push_back(vertex);
+            }
+          }
+          if (plo->remove_loop_edge &&
+              g->node_attrs->get_host()[vertex] & 0b1000) {
+            int vertex_e = vertex + 1;
+            if (g->symbol_sets->get_host()[vertex_e].test(symbol)) {
+              vk.push_back(vertex_e);
+              if (g->node_attrs->get_host()[vertex_e] & 0b10)
+                rk.push_back(vertex_e);
             }
           }
           for (int e = e_start; e < e_end; e++) { // advance

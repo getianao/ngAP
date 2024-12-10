@@ -53,12 +53,13 @@ int main(int argc, char *argv[]) {
   // cout << "input_stream_size = " << ss.size() << endl;
   auto ab = old_ss.calc_alphabet();
 
-  auto nfa = load_nfa_from_file(automata_filename, opt.remove_loop_edge);
+  auto nfa = load_nfa_from_file(automata_filename);
   nfa_utils::print_nfa_info(nfa);
 
   Graph g;
   // g.ReadANML(automata_filename);
   g.ReadNFA(nfa);
+  g.print_nfa_info();
   printf("ReadANML finish \n");
   g.copyToDevice();
 

@@ -93,6 +93,31 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
         }
       }
     }
+    if (node_attr & 0b1000) {
+      int rneighbor_e = rvertex + 1;
+      if (symbol_set.test(rneighbor_e, rsymbol)) {
+        if (false) {
+          int mask1 =
+              __match_any_sync(__activemask(), getResult(rneighbor_e, riter));
+          int leader = __ffs(mask1) - 1;
+          if (threadIdx.x % 32 == leader) {
+            addToBufferSimple(rneighbor_e, riter + 1, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+            if (node_attrs[rneighbor_e] & 0b10)
+              addResult2(rneighbor_e, riter + 1, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+          }
+        } else {
+          addToBufferSimple(rneighbor_e, riter + 1, d_buffer, d_buffer_idx,
+                            *d_buffer_start, d_buffer_end_tmp,
+                            buffer_capacity_per_block);
+          if (node_attrs[rneighbor_e] & 0b10)
+            addResult2(rneighbor_e, riter + 1, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+        }
+      }
+    }
     // #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
@@ -160,6 +185,39 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
                               buffer_capacity_per_block);
           } else {
             processRealVertexR0(rvertex, riter + 1, depth + 1);
+          }
+        }
+      }
+    }
+    if (node_attr & 0b1000) {
+      int rneighbor_e = rvertex + 1;
+      if (symbol_set.test(rneighbor_e, rsymbol)) {
+        if (unique && isUnique) {
+          int mask1 =
+              __match_any_sync(__activemask(), getResult(rneighbor_e, riter));
+          int leader = __ffs(mask1) - 1;
+          if (threadIdx.x % 32 == leader) {
+            if (node_attrs[rneighbor_e] & 0b10)
+              addResult2(rneighbor_e, riter + 1, d_results_v, d_results_i,
+                         results_size, nblb.results_capacity, nblb.report_off);
+            if (__popc(__activemask()) <= nblb.active_threshold) {
+              addToBufferSimple(rneighbor_e, riter + 1, d_buffer, d_buffer_idx,
+                                *d_buffer_start, d_buffer_end_tmp,
+                                buffer_capacity_per_block);
+            } else {
+              processRealVertexR0(rneighbor_e, riter + 1, depth + 1);
+            }
+          }
+        } else {
+          if (node_attrs[rneighbor_e] & 0b10)
+            addResult2(rneighbor_e, riter + 1, d_results_v, d_results_i,
+                       results_size, nblb.results_capacity, nblb.report_off);
+          if (__popc(__activemask()) <= nblb.active_threshold) {
+            addToBufferSimple(rneighbor_e, riter + 1, d_buffer, d_buffer_idx,
+                              *d_buffer_start, d_buffer_end_tmp,
+                              buffer_capacity_per_block);
+          } else {
+            processRealVertexR0(rneighbor_e, riter + 1, depth + 1);
           }
         }
       }

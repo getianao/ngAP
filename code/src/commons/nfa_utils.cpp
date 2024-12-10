@@ -946,6 +946,7 @@ pair<int, int> nfa_utils::print_starting_node_info(NFA *nfa) {
 void nfa_utils::print_nfa_info(NFA *nfa) {
 	cout << "NFA Info:\n";
 	cout << "    total_state_number = " << nfa->size() << endl;
+	cout << "    total_edge_number = " << nfa->edge_size() << endl;
 	int num_start = 0;
 	int num_all_input = 0;
 	int num_report = 0;

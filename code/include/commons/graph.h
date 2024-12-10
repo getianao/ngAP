@@ -138,6 +138,9 @@ public:
   int reportingStateNum = 0;
   int input_length = 0;
 
+  int edge_self = 0;
+  int edge_next = 0;
+
   Array2<My_bitset256> *symbol_sets_unique;
   Array2<uint16_t> *node2matchsetidx;
 
@@ -149,6 +152,8 @@ public:
   cudaError_t copyToDevice();
   Matchset get_matchset_device(bool is_soa);
   MatchsetUnique get_matchset_unique_device(int matchset_unique_num, bool use_soa);
+
+  void print_nfa_info();
 };
 
 class Csr {

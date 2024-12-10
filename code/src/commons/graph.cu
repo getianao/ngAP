@@ -219,15 +219,26 @@ cudaError_t Graph::ReadNFA(NFA *nfa) {
       start_active_nodes->get_host()[startActiveIndex] = i;
       startActiveIndex++;
     }
-    if (node->segmented_start == true) {
-      node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 2));
-    }
     if (node->is_report())
       node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 1));
     for (int j = 0; j < nfa->adj[node->str_id].size(); j++) {
-      edge_pairs->get_host()[edgeIndex].x = i;
-      edge_pairs->get_host()[edgeIndex].y =
-          nfa->get_node_by_str_id(nfa->adj[node->str_id][j])->sid;
+      int x = i;
+      int y = nfa->get_node_by_str_id(nfa->adj[node->str_id][j])->sid;
+      if (x == y) {
+        node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 2));
+        edgesNum--;
+        edge_self++;
+        continue;
+      }
+      if (x + 1 == y) {
+        node_attrs->get_host()[i] = (node_attrs->get_host()[i] | (0x1 << 3));
+        edgesNum--;
+        edge_next++;
+        continue;
+      }
+
+      edge_pairs->get_host()[edgeIndex].x = x;
+      edge_pairs->get_host()[edgeIndex].y = y;
       edgeIndex++;
     }
   }
@@ -363,6 +374,17 @@ cudaError_t Graph::copyToDevice(){
   always_active_nodes->copy_to_device();
   start_active_nodes->copy_to_device();
   return cudaSuccess;
+}
+
+void Graph::print_nfa_info() {
+  std::cout << "Graph Info:" << std::endl;
+  std::cout << "    Nodes: " << nodesNum << std::endl;
+  std::cout << "    Edges: " << edgesNum << std::endl;
+  std::cout << "    Self Edges: " << edge_self << std::endl;
+  std::cout << "    Next Edges: " << edge_next << std::endl;
+  std::cout << "    Always Active Nodes: " << alwaysActiveNum << std::endl;
+  std::cout << "    Start Active Nodes: " << startActiveNum << std::endl;
+  std::cout << "    Reporting States: " << reportingStateNum << std::endl;
 }
 
 /**

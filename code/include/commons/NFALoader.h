@@ -16,11 +16,11 @@
 
 using std::string;
 
-NFA *load_nfa_from_anml(string filename, bool remove_loop_edge = false);
+NFA *load_nfa_from_anml(string filename);
 
 // NFA *load_nfa_from_mnrl(string filename);
 
-NFA *load_nfa_from_file(string filename, bool remove_loop_edge = false);
+NFA *load_nfa_from_file(string filename);
 
 #endif /* NFALOADER_H_ */
 

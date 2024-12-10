@@ -70,11 +70,15 @@ void automata_utils::automataGroupsReference(std::vector<Graph *> &gs,
           addResult(v, iter, db_results);
         }
 #endif
+        // TODO(tge): remove self loop
         if (g->symbol_sets->get_host()[v].test(current_symbol)) {
           // report
           if (g->node_attrs->get_host()[v] & 0b10) {
             addResult(v, iter, nfa_index, results);
           }
+          // if (g->node_attrs->get_host()[v] & 0b100) {
+          //   next_frontier.push_back(v);
+          // }
           int e_start = csr.GetNeighborListOffset(v);
           int e_end = e_start + csr.GetNeighborListLength(v);
           for (int e = e_start; e < e_end; e++) {
