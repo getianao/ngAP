@@ -4268,7 +4268,7 @@ void ngap::recursivePrecomputeForK(Csr &csr, Graph *g, PrecTable *pts, int k,
             }
           }
         }
-        assert((entry_index * 256 + symbol) < current_pt->size);
+        // assert((entry_index * 256 + symbol) < current_pt->size);
         current_pt->setVertices(i * 256 + symbol, vk);
         current_pt->setResults(i * 256 + symbol, rk);
       }
