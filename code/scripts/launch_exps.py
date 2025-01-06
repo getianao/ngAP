@@ -11,6 +11,8 @@ import json
 import llcommons
 import shutil
 import time
+import pynvml
+import psutil
 
 
 # exclude_apps = ["Hamming_N1000_l22_d5", "Hamming_N1000_l31_d10",
@@ -29,7 +31,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     BRIGHTRED = '\u001b[31;1m'
-    
+
 class Config:
     cfg = None
     output_filenames = []
@@ -46,10 +48,10 @@ class Config:
     nvprof_events = None
     dryrun = None
     validation = None
-    
+
     exclude_configs = []
     exclude_apps = []
-    
+
     def __init__(self, cfg):
         self.cfg = cfg
         self.output_filenames = []
@@ -64,7 +66,7 @@ class Config:
             self.exclude_apps = self.benchmark_desc_obj["exclude_apps"]
         if "exclude_configs" in self.cfg:
             self.exclude_configs = self.cfg["exclude_configs"]
-        
+
         print("exclude_configs:", self.exclude_configs)
         print("exclude_apps:", self.exclude_apps)
 
@@ -76,7 +78,7 @@ class Config:
 
     def set_exp_start_id(self, exp_start_id):
         self.exp_start_id = exp_start_id
-        
+
     def set_timeout_seconds(self, timeout_seconds):
         self.timeout_seconds = timeout_seconds
         print("timeout =", self.timeout_seconds/60, "minutes")
@@ -104,9 +106,6 @@ class Config:
 
             return self.cfg['apps']
 
-
-
-
     def get_excludes_apps(self):
         if not 'exclude_apps' in self.cfg:
             return []
@@ -132,10 +131,9 @@ class Config:
                 return tup[1]
         return None
 
-
     def get_command_template(self, cfg_name, anml, input_file, app, isHS, quick_validation, isVASim = False):
         assert(cfg_name in self.cfg['exp_parameters'])
-        #print('cfg_name = ', cfg_name)
+        # print('cfg_name = ', cfg_name)
         if isHS:
             cmd_str_template = '%s ' % (self.get_executable(cfg_name)) 
             for tup in self.cfg['exp_parameters'][cfg_name]:
@@ -167,10 +165,10 @@ class Config:
 
     def get_input_file_path_for_app(self, app):
         if self.benchmark_rootpath != None:
-            #print '??????????????????', self.benchmark_rootpath
+            # print '??????????????????', self.benchmark_rootpath
             input_file_dir = os.path.join(self.benchmark_rootpath, app, 'inputs')
             input_file = llcommons.get_file_path(input_file_dir, self.get_input_suffix())
-            #print input_file
+            # print input_file
             return input_file
         elif self.benchmark_desc_file != None:
             for a in self.benchmark_desc_obj['apps']:
@@ -181,7 +179,7 @@ class Config:
             return None
         else:
             print('error, should provide benchmarks')
-            
+
     def get_quick_validation_for_app(self, app):
         if self.benchmark_rootpath != None:
             return -1
@@ -231,16 +229,15 @@ class Config:
         else:
             print('error, should provide benchmarks')
 
-
     def generate_command_for_app(self, cfg_name, app):
         assert(cfg_name in self.cfg['exp_parameters'])
-        
+
         output_name = ""
         for tup in self.cfg['exp_parameters'][cfg_name]:
             if(len(tup) >= 2 and tup[0] == "output-name"):
                 output_name = tup[1]
                 break
-        
+
         isHS = False
         isVASim = False
         if "hyperscan" in cfg_name:
@@ -248,21 +245,21 @@ class Config:
         elif "vasim" in cfg_name:
             isVASim = True
         list_of_list = []
-    
+
         for tup in self.cfg['exp_parameters'][cfg_name]:
             if(len(tup) >= 2 and tup[0] == "app"):
                 if(app in tup[1]):
                     break
                 else:
                     return []
-                
+
         for tup in self.cfg['exp_parameters'][cfg_name]:
             if(len(tup) >= 2 and tup[0] == "excludedApp"):
                 if(app in tup[1]):
                     return []
                 else:
                     break
-   
+
         for tup in self.cfg['exp_parameters'][cfg_name]:
             if(len(tup) >= 5 and tup[3] == 'specific-app-option' and app in tup[4]):
                 list_of_list.append(tup[2])
@@ -275,17 +272,17 @@ class Config:
         quick_validation = self.get_quick_validation_for_app(app)
         if "error" in anml_file:
             return []
-        
-        #print('input_file = ', input_file, ' anml = ', anml_file)
+
+        # print('input_file = ', input_file, ' anml = ', anml_file)
 
         cmd_template = self.get_command_template(cfg_name, anml_file, input_file, app, isHS, quick_validation, isVASim)
         # print(cmd_template)
-        
+
         res = []
         for exp in range(self.exp_start_id, self.exp_start_id + self.get_exp_times()):
             for it in  itertools.product(*list_of_list):
                 real_cmd = cmd_template % it
-                
+
                 output_filename_wo_exp_t = ""
                 output_filename = ""
                 output_filename_template = ""
@@ -297,8 +294,8 @@ class Config:
                     # tp.extend(list(it))
                     tp.append(str(exp))
                     tp = tuple(tp)
-                    #print output_filename_template
-                    #print tp
+                    # print output_filename_template
+                    # print tp
                     output_filename = output_filename_template % tp
                     self.output_filenames.append(output_filename_wo_exp_t)
                 else:
@@ -310,15 +307,14 @@ class Config:
                     tp.extend(list(it))
                     tp.append(str(exp))
                     tp = tuple(tp)
-                    #print output_filename_template
-                    #print tp
+                    # print output_filename_template
+                    # print tp
                     output_filename = output_filename_template % tp
                     self.output_filenames.append(output_filename_wo_exp_t)
-                
+
                 res.append((real_cmd, output_filename))
 
         return res
-
 
     def generate_commands(self):
         assert('exp_parameters' in self.cfg)
@@ -330,7 +326,7 @@ class Config:
             for it in self.cfg['exp_parameters']:
                 res[app].extend(self.generate_command_for_app(it, app))  
 
-        #print(res)
+        # print(res)
 
         return res
 
@@ -347,6 +343,47 @@ class Config:
             pbsfile.write(exec_pbs)
             pbsfile.close()
 
+    def gpu_info(self):
+        try:
+            pynvml.nvmlInit()
+            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+            name = pynvml.nvmlDeviceGetName(handle)
+            graphics_clock = pynvml.nvmlDeviceGetClockInfo(
+                handle, pynvml.NVML_CLOCK_GRAPHICS
+            )
+            sm_clock = pynvml.nvmlDeviceGetClockInfo(handle, pynvml.NVML_CLOCK_SM)
+            memory_clock = pynvml.nvmlDeviceGetClockInfo(handle, pynvml.NVML_CLOCK_MEM)
+            print(f"GPU name: {name}")
+            print(f"SM Clock: {sm_clock} MHz", f"Memory Clock: {memory_clock} MHz")
+            # assert sm_clock == 1695
+
+            processes = pynvml.nvmlDeviceGetComputeRunningProcesses(handle)
+            if processes:
+                print("Running processes:")
+                for process in processes:
+                    pid = process.pid
+                    try:
+                        proc = psutil.Process(pid)
+                        proc_name = proc.name()
+                        proc_owner = proc.username()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        proc_name = "Unknown"
+                        proc_owner = "Unknown"
+                    memory_used = (
+                        process.usedGpuMemory // 1024 // 1024
+                    )  # Convert bytes to MB
+                    print(
+                        f"PID: {pid}, name: {proc_name}, owner: {proc_owner}, Memory Used: {memory_used} MB"
+                    )
+                raise Exception("Error: There are active processes.")
+            else:
+                print("No active processes.")
+        except pynvml.NVMLError as e:
+            print(f"Error: {str(e)}")
+            raise e
+        finally:
+            # Shutdown NVML
+            pynvml.nvmlShutdown()
 
     def launch_experiments(self):
         # print(self.cfg['exp_parameters'])
@@ -431,6 +468,8 @@ class Config:
                         prog_output = outfile + "_ncu.txt"
                     else:
                         prog_output = outfile + ".txt"
+
+                    self.gpu_info()
                     print(app, outfile, 'exec command : ==== ', cmd, flush=True)
                     if not self.dryrun:
                         if self.pbs_template == None:
@@ -481,7 +520,7 @@ class Config:
                                         else:
                                             print(bcolors.WARNING + exp_parameters_name,
                                             "Error: get throughput failed" + bcolors.ENDC, f"{toc - tic:0.1f} seconds", flush=True)           
-                                
+
                             except subprocess.TimeoutExpired:
                                 print(bcolors.WARNING + exp_parameters_name,
                                       "Error: timeout" + bcolors.ENDC, f"{self.timeout_seconds:0.1f} seconds", flush=True)
@@ -507,7 +546,7 @@ class Config:
                 #             else:
                 #                 self.create_pbs_tasks(app, nv_cmd, 'nvprof_' + outfile , nv_mode1_log, pbsT)
                 #                 call(['qsub', 'nvprof_' + outfile + '.pbs'])
-                    
+
                 #     if self.do_gputrace:
                 #         nv_gputrace = "nvprof  --csv --log-file  %s_gputrace.csv --print-gpu-trace " % outfile
                 #         nv_gputrace_cmd = nv_gputrace + cmd
@@ -520,7 +559,7 @@ class Config:
                 #             else:
                 #                 self.create_pbs_tasks(app, nv_gputrace_cmd, 'nvprofgputrace_' + outfile , nv_gputrace_log, pbsT)
                 #                 call(['qsub', 'nvprofgputrace_' + outfile + '.pbs'])
-                    
+
             os.chdir('..')
 
     def set_do_exec(self, doexec):
@@ -546,7 +585,6 @@ class Config:
 
     def __repr__(self):
         return self.cfg
-
 
 
 def create_config(config_file):

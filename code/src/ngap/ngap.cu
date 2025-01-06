@@ -2054,6 +2054,14 @@ void ngap::launch_non_blocking_all_groups() {
            "add_aas_interval=%d, active_threshold=%d\n",
            best_choice[0], best_choice[1], best_choice[2]);
   } else {
+    // bool passValidation1 = true;
+    // printf("Warm up\n");
+    // startNonBlockAutomata(passValidation1);
+    // nblb.reset(input_stream, input_stream->size(), multi_ss_size,
+    //            plo->group_num, gs, plo);
+    // CHECK_LAST_ERROR
+    // printf("Start non block automata\n");
+    
     bool passValidation = true;
     startNonBlockAutomata(passValidation);
     if (!passValidation && plo->try_adaptive_aas) {
@@ -4346,6 +4354,7 @@ int ngap::getPrecomputeResultsForKGroupsInCsr(Csr &csr, Graph *g,
     pts[i].toDevice(plo->pc_use_uvm);
     // pts[i].calcCutoffMedian();
     pts[i].calcCutoff();
+    printf("pts[%d].cutoff = %d\n", i,pts[i].cutoff);
     if (plo->precompute_cutoff >= 0) {
       printf("Use user-defined precompute_cutoff %d\n", plo->precompute_cutoff);
       pts[i].cutoff = plo->precompute_cutoff;

@@ -182,7 +182,7 @@ def plot(path_list, figurePath, ylabel):
             "labelExceedYlim": True,
             "xyscale": [None, None],
             "showxyTicksLabel": [True, True],
-            "xyticksRotation": [30, 0],
+            "xyticksRotation": [45, 0],
             "xyticksMajorLocator": [None, 20],
         },
         averageConfig={
@@ -213,4 +213,4 @@ if __name__ == "__main__":
     # paths.append(path2)
     plot(path_list=paths,
          figurePath=result_folder+"motivation_e1.pdf",
-         ylabel="Reduntant Symbol-set Ratio (%)")
+         ylabel="% of Duplicate Matchsets")
