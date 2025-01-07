@@ -44,6 +44,10 @@ configs_dict = {
     # "o4-nonblocking-r-breakdown_": ["NAP+O3", -84],
     "o3-nonblocking-p-breakdown_": ["ngAP+$\mathregular{O^2}$", 85],
     "oa-nonblocking-all-breakdown_": ["ngAP+$\mathregular{O^3}$", 86],
+    
+    # O4
+    "oa-nonblocking-default-best-e2": ["ngAP-default", 90],
+    "oa-nonblocking-all-best-e2": ["ngAP-best", 91],
 }
 
 
@@ -175,10 +179,12 @@ if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
     # result_folder = "../ref_results/"
     result_folder = "../results/"
-    path1 = result_folder+"raw/throughput_gpu_nap_best"
+    # path1 = result_folder+"raw/throughput_gpu_nap_best"
+    path1 = result_folder+"raw/throughput_gpu_nap_best_e2"
     path2 = result_folder+"raw/throughput_gpu_sota_best"
     path3 = result_folder+"raw/throughput_gpu_runahead"
-    path4 = result_folder+"/raw/throughput_gpu_nap_default_adp"
+    # path4 = result_folder+"/raw/throughput_gpu_nap_default_adp"
+    path4 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2"
     paths = []
     paths.append(path1)
     paths.append(path2)

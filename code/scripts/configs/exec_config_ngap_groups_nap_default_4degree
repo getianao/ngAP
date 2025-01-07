@@ -28,6 +28,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
 
         "oa-nonblocking-default-p3r1-ClamAV" : [
@@ -57,6 +58,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-EntityResolution" : [
             ("exec", 'ngap', 'nocombination'),
@@ -85,6 +87,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-FileCarving" : [
             ("exec", 'ngap', 'nocombination'),
@@ -113,6 +116,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Dotstar" : [
             ("exec", 'ngap', 'nocombination'),
@@ -141,6 +145,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-PowerEN" : [
             ("exec", 'ngap', 'nocombination'),
@@ -169,6 +174,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-CRISPR_CasOFFinder" : [
             ("exec", 'ngap', 'nocombination'),
@@ -197,6 +203,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-CRISPR_CasOT" : [
             ("exec", 'ngap', 'nocombination'),
@@ -225,6 +232,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-RandomForest_20_400_200" : [
             ("exec", 'ngap', 'nocombination'),
@@ -253,6 +261,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-RandomForest_20_400_270" : [
             ("exec", 'ngap', 'nocombination'),
@@ -281,6 +290,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-RandomForest_20_800_200" : [
             ("exec", 'ngap', 'nocombination'),
@@ -309,6 +319,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p2r1-Hamming_N1000_l18_d3" : [
             ("exec", 'ngap', 'nocombination'),
@@ -337,6 +348,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Hamming_N1000_l22_d5" : [
             ("exec", 'ngap', 'nocombination'),
@@ -365,6 +377,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Hamming_N1000_l31_d10" : [
             ("exec", 'ngap', 'nocombination'),
@@ -393,6 +406,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Levenshtein_l19d3" : [
             ("exec", 'ngap', 'nocombination'),
@@ -421,6 +435,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Levenshtein_l24d5" : [
             ("exec", 'ngap', 'nocombination'),
@@ -449,6 +464,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Levenshtein_l37d10" : [
             ("exec", 'ngap', 'nocombination'),
@@ -477,6 +493,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Snort" : [
             ("exec", 'ngap', 'nocombination'),
@@ -505,6 +522,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-YARA" : [
             ("exec", 'ngap', 'nocombination'),
@@ -533,6 +551,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Protomata" : [
             ("exec", 'ngap', 'nocombination'),
@@ -561,6 +580,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-APPRNG4" : [
             ("exec", 'ngap', 'nocombination'),
@@ -589,6 +609,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-SeqMatch_BIBLE_w6_p6" : [
             ("exec", 'ngap', 'nocombination'),
@@ -617,6 +638,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-SeqMatch_BIBLE_w6_p10" : [
             ("exec", 'ngap', 'nocombination'),
@@ -645,6 +667,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Fermi" : [
             ("exec", 'ngap', 'nocombination'),
@@ -673,6 +696,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Bro217" : [
             ("exec", 'ngap', 'nocombination'),
@@ -701,6 +725,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-ExactMath" : [
             ("exec", 'ngap', 'nocombination'),
@@ -729,6 +754,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Ranges05" : [
             ("exec", 'ngap', 'nocombination'),
@@ -757,6 +783,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-Ranges1" : [
             ("exec", 'ngap', 'nocombination'),
@@ -785,6 +812,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-TCP" : [
             ("exec", 'ngap', 'nocombination'),
@@ -813,6 +841,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-smallClamAV" : [
             ("exec", 'ngap', 'nocombination'),
@@ -841,6 +870,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-smallFileCarving" : [
             ("exec", 'ngap', 'nocombination'),
@@ -869,6 +899,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
         "oa-nonblocking-default-p3r1-smallSnort" : [
             ("exec", 'ngap', 'nocombination'),
@@ -897,6 +928,7 @@
             ("remove-degree", ['true']),
             ("quit-degree", ['false']),
             ("max-nfa-size", ["-1"]),
+            ("adaptive-aas", ['true']),
         ],
     },
 

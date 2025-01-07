@@ -5,7 +5,7 @@ cd ${DIR}
 
 # VALI=--validation
 
-mkdir -p ./results/raw/throughput_cpu
+mkdir -p ../results/raw/throughput_cpu
 
 # config: [cpu], apps: [part 1]
 APPS="app_spec_ngap_new_quickvalidation_part1" \

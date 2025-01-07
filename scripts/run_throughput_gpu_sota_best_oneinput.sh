@@ -5,7 +5,7 @@ cd ${DIR}
 
 VALI=--validation
 
-mkdir -p ./results/raw/throughput_gpu_sota_best_oneinput
+mkdir -p ../results/raw/throughput_gpu_sota_best_oneinput
 # config: [sota], apps: [part 1]
 APPS="app_spec_ngap_new_quickvalidation_part1" \
 CONFIGS="exec_config_ngap_groups_design_sota_oneinput" \

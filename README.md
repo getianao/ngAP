@@ -88,6 +88,7 @@ If you use `conda` and `pip`, simply run the following commands to install plott
 
 ```bash
 conda install -y numpy scipy pandas seaborn -c conda-forge
+pip install pynvml psutil
 pip install https://github.com/getianao/figurePlotter/archive/refs/tags/v0.23.9.14.tar.gz
 ```
 

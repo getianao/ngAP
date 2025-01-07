@@ -5,7 +5,7 @@ cd ${DIR}
 
 VALI=--validation
 
-mkdir -p ./results/raw/throughput_gpu_nap_best_e2
+mkdir -p ../results/raw/throughput_gpu_nap_best_e2
 
 # config: [NAP-Best], apps: [part 1, part 2]
 APPS="app_spec_ngap_new_quickvalidation_part1" \
@@ -19,7 +19,7 @@ CONFIGS="exec_config_ngap_groups_best_e2" \
 ${VALI}  --timeout-mins=60 --csvdest=./results/raw/throughput_gpu_nap_best_e2/throughput_gpu_napbest_e2_part2.csv
 
 # # config: [NAP-Best'], apps: [part 3]
-# APPS="app_spec_ngap_new_quickvalidation_part3" \
-# CONFIGS="exec_config_ngap_groups_best_4degree_e2" \
-# ./run_throughput.sh --keywords=../../code/scripts/collect_keyword_list_throughput.txt \
-# ${VALI}  --timeout-mins=60 --csvdest=./results/raw/throughput_gpu_nap_best_e2/throughput_gpu_napbest_e2_part3.csv
+APPS="app_spec_ngap_new_quickvalidation_part3" \
+CONFIGS="exec_config_ngap_groups_best_e2_4degree" \
+./run_throughput.sh --keywords=../../code/scripts/collect_keyword_list_throughput.txt \
+${VALI}  --timeout-mins=60 --csvdest=./results/raw/throughput_gpu_nap_best_e2/throughput_gpu_napbest_e2_part3.csv

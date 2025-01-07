@@ -1,0 +1,17 @@
+[
+    ('l1tex__t_sector_hit_rate.ratio', 'float'),
+    ('lts__t_sector_hit_rate.ratio', 'float'),
+    ('dram__bytes.sum', 'float'),
+    ('dram__bytes_read.sum', 'float'),
+    ('dram__bytes_write.sum', 'float'),
+    ('l1tex__m_l1tex2xbar_write_bytes_mem_global_op_atom.sum', 'float'),
+    ('l1tex__t_bytes_pipe_lsu_mem_global_op_atom.sum', 'float'),
+    ('sm__maximum_warps_per_active_cycle_pct', 'float'),
+    ('sm__throughput.avg.pct_of_peak_sustained_active', 'float'),
+    ('sm__warps_active.avg.pct_of_peak_sustained_active', 'float'),
+    ('smsp__warp_issue_stalled_membar_per_warp_active.pc', 'float'),   
+    ('smsp__warp_issue_stalled_barrier_per_warp_active.pct', 'float'),
+    ('sass__inst_executed_global_loads', 'float'),
+    ('sass__inst_executed_global_stores', 'float'),
+    ('throughput', 'float'),
+]

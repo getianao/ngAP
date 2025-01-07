@@ -38,8 +38,9 @@ configs_dict = {
     # "oa-nonblocking-default-32-best": ["NAP-default-32", 63.1],
     # "oa-nonblocking-default-128-best": ["NAP-default-128", 63.2],
     "oa-nonblocking-default-256-best": ["NAP-default-256", 63.3],
-    "oa-nonblocking-default-best": ["NAP", 63.5],
-    "oa-nonblocking-all-best": ["NAP-Best", 64],
+    
+    "oa-nonblocking-all-best-e2": ["ngAP-best-e2", 101],
+    "oa-nonblocking-all-best": ["NAP-Best", 100],
     
     "o0-blocking-breakdown_": ["Blocking", 81],
     "o0-nonblocking-NAP-breakdown_": ["NAP", 82],
@@ -47,8 +48,13 @@ configs_dict = {
     # "o4-nonblocking-r-breakdown_": ["NAP+O3", -84],
     "o3-nonblocking-p-breakdown_": ["NAP+O2", 85],
     "oa-nonblocking-all-breakdown_": ["NAP+O3", 86],
+    
+    "oa-nonblocking-default-best-e1": ["ngAP-default-e1", 91],
+    # "oa-nonblocking-default-best-e2p": ["ngAP-default-e2p", 93],
+    "oa-nonblocking-default-best-e2": ["ngAP-default-e2", 92],
+    
+    "oa-nonblocking-default-best": ["NAP", 63.5],
 }
-
 
 
 def normalize_data(data, normalize_to_column_name):
@@ -76,11 +82,9 @@ def set_datatype(data):
   return data
 
 
-
 def geo_mean(x):
     a = np.log(x)
     return np.exp(a.mean())
-
 
 
 def merge_csv(path_list, save_path):
@@ -136,6 +140,52 @@ def merge_csv(path_list, save_path):
   df2 = df2.replace(-1, "W")
   # print(df2)
   df2.to_csv(save_path, sep=',', index = False)
+  return df2
+
+class LatexPrinter:
+    def __init__(self, df):
+        self.df = df
+        self.letex_code = ""
+        self.tex_table_start = r"\begin{tabular}"
+        self.tex_table_end = r"\end{tabular}"
+        self.tex_hline = r"\hline"
+        self.new_line = r"\\"
+
+    def add_line(self, line):
+        self.letex_code += line + "\n"
+
+    def escape(self, s):
+        s = s.replace("_", r"\_")
+        s = s.replace("#", r"\#")
+        return s
+
+    def bold(self, s):
+        return r"\textbf{" + s + r"}"
+
+    def gen_table_latex(self, tex_file_path):
+        tex_table_position = r"{|c|r|r|r|r|r|r|}"
+        self.add_line(self.tex_table_start + tex_table_position)
+        self.add_line(self.tex_hline)
+        # Column names
+        columns = self.df.columns.tolist()
+        columns = [self.bold(self.escape(col)) for col in columns]
+        tex_columns = " & ".join(columns)
+        self.add_line(tex_columns + self.new_line + self.tex_hline)
+
+        # Data
+        for i in range(self.df.shape[0]):
+            row = self.df.iloc[i].tolist()
+            print(row)
+            row = [self.escape(str(col)) for col in row]
+            row_length = len(row)
+            tex_row = " & ".join(row)
+            tex_cline = r"\cline{1-" + str(row_length) + "}"
+            self.add_line(tex_row + self.new_line + tex_cline)
+
+        self.add_line(self.tex_table_end)
+        print(self.letex_code)
+        with open(tex_file_path, "w") as f:
+            f.write(self.letex_code)
 
 
 if __name__ == "__main__":
@@ -147,14 +197,27 @@ if __name__ == "__main__":
     path3 = result_folder+"raw/throughput_gpu_runahead"
     path4 = result_folder+"raw/throughput_cpu"
     path5 = result_folder+"/raw/throughput_gpu_nap_default_adp"
+
+    path6 = result_folder+"/raw/throughput_gpu_nap_default_adp_e1"
+    path7 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2"
+    path8 = result_folder+"/raw/throughput_gpu_nap_best_e2"
+
     paths = []
     paths.append(path1)
     paths.append(path2)
     paths.append(path3)
     paths.append(path4)
     paths.append(path5)
-    save_path = result_folder+"/tab4_throughput.csv"
     
-    merge_csv(paths, save_path)
+    paths.append(path6)
+    paths.append(path7)
+    paths.append(path8)
+    
+    save_path = result_folder+"/tab4_throughput_o4.csv"
 
-
+    df = merge_csv(paths, save_path)
+    
+    print(df)
+    
+    lp = LatexPrinter(df)
+    lp.gen_table_latex()

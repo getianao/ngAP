@@ -8,6 +8,11 @@ import figurePlotter
 from dict_config import *
 
 configs_dict = {
+  
+    # O4
+    "oa-nonblocking-default-best-e2": ["ngAP-default", 90],
+    "oa-nonblocking-all-best-e2": ["ngAP-best", 91],
+    
     # sota
     "before-infant_": ["iNFAnt", -1],
     "before-nfacg_": ["NFA-CG", 2],
@@ -50,7 +55,6 @@ configs_dict = {
 }
 
 
-
 def normalize_data(data, normalize_to_column_name):
   row_names = data.index.tolist()
   # error_value = 0
@@ -76,11 +80,9 @@ def set_datatype(data):
   return data
 
 
-
 def geo_mean(x):
     a = np.log(x)
     return np.exp(a.mean())
-
 
 
 def merge_csv(path_list, save_path):
@@ -136,26 +138,76 @@ def merge_csv(path_list, save_path):
   df2 = df2.replace(-1, "W")
   # print(df2)
   df2.to_csv(save_path, sep=',', index = False)
+  return df2
+
+class LatexPrinter:
+    def __init__(self, df):
+        self.df = df
+        self.letex_code = ""
+        self.tex_table_start = r"\begin{tabular}"
+        self.tex_table_end = r"\end{tabular}"
+        self.tex_hline = r"\hline"
+        self.new_line = r"\\"
+
+    def add_line(self, line):
+        self.letex_code += line + "\n"
+
+    def escape(self, s):
+        s = s.replace("_", r"\_")
+        s = s.replace("#", r"\#")
+        return s
+
+    def bold(self, s):
+        return r"\textbf{" + s + r"}"
+
+    def gen_table_latex(self, tex_file_path):
+        tex_table_position = r"{|c|r|r|r|r|r|r|}"
+        self.add_line(self.tex_table_start + tex_table_position)
+        self.add_line(self.tex_hline)
+        # Column names
+        columns = self.df.columns.tolist()
+        columns = [self.bold(self.escape(col)) for col in columns]
+        tex_columns = " & ".join(columns)
+        self.add_line(tex_columns + self.new_line + self.tex_hline)
+
+        # Data
+        for i in range(self.df.shape[0]):
+            row = self.df.iloc[i].tolist()
+            print(row)
+            row = [self.escape(str(col)) for col in row]
+            row_length = len(row)
+            tex_row = " & ".join(row)
+            tex_cline = r"\cline{1-" + str(row_length) + "}"
+            self.add_line(tex_row + self.new_line + tex_cline)
+
+        self.add_line(self.tex_table_end)
+        print(self.letex_code)
+        with open(tex_file_path, "w") as f:
+            f.write(self.letex_code)
+        
 
 
 if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
-    
     # result_folder = "../ref_results/"
     result_folder = "../results/"
-    path1 = result_folder+"raw/throughput_gpu_nap_best_oneinput"
+    # path1 = result_folder+"raw/throughput_gpu_nap_best_oneinput"
+    path1 = result_folder+"raw/throughput_gpu_nap_best_e2_oneinput"
     path2 = result_folder+"raw/throughput_gpu_sota_best_oneinput"
     path3 = result_folder+"raw/throughput_gpu_runahead_oneinput"
     path4 = result_folder+"raw/throughput_cpu_oneinput"
-    path5 = result_folder+"raw/throughput_gpu_nap_default_adp_oneinput"
+    # path5 = result_folder+"raw/throughput_gpu_nap_default_adp_oneinput"
+    path5 = result_folder+"raw/throughput_gpu_nap_default_adp_e2_oneinput"
     paths = []
     paths.append(path1)
     paths.append(path2)
     paths.append(path3)
     paths.append(path4)
     paths.append(path5)
-    save_path = result_folder+"tab6_latency.csv"
+    save_path = result_folder+"tab6_latency_o4.csv"
+
+    df = merge_csv(paths, save_path)
+    print(df)
     
-    merge_csv(paths, save_path)
-
-
+    lp = LatexPrinter(df)
+    lp.gen_table_latex(result_folder+"throughput_oneinput_all_04.tex")

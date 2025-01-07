@@ -5,7 +5,7 @@ cd ${DIR}
 
 # VALI=--validation
 
-mkdir -p ./results/raw/throughput_gpu_runahead
+mkdir -p ../results/raw/throughput_gpu_runahead
 
 # config: [runahead], apps: [part 1]
 APPS="app_spec_ngap_new_quickvalidation_part1" \
