@@ -1,0 +1,61 @@
+{
+    "exp_parameters" : {
+
+        "oa-nonblocking-all-p3r1-tuning" : [
+            ("exec", 'pipeline', 'nocombination'),
+            ("excludedApp", ["Fermi", "Snort", "smallSnort"], 'nocombination'),
+            ("output-name", "oa-nonblocking-all-p3r1-tuning_", 'nocombination'),
+            ("algorithm", ["nonblockingallgroups"]),
+            ("input-start-pos", ["0"]),
+            ("input-len", ["1000000"]),
+            ('split-entire-inputstream-to-chunk-size', ['1000000']),
+            ("group-num", ["1"]),
+            ('duplicate-input-stream', ['600']),
+            ('unique', ['false']),
+            ('unique-frequency', ['10']),
+            ('use-soa', ['false']),
+            ('result-capacity', ['80000000']),
+            ('use-uvm', ['false']),
+            ('data-buffer-fetch-size', ['25600000']),
+            ('add-aan-start', ['512']),
+            ('add-aas-interval', ['32']),
+            ('active-threshold', ['10']),
+            ('precompute-cutoff', ['-1']),
+            ("precompute-depth", ["3"]),
+            ("compress-prec-table", ['true']),
+            ("tuning", ['true']),
+        ],
+    "oa-nonblocking-all-p3r1-tuning-unique" : [
+            ("exec", 'pipeline', 'nocombination'),
+            ("app", ["Fermi", "Snort", "smallSnort"], 'nocombination'),
+            ("output-name", "oa-nonblocking-all-p3r1-tuning_", 'nocombination'),
+            ("algorithm", ["nonblockingallgroups"]),
+            ("input-start-pos", ["0"]),
+            ("input-len", ["1000000"]),
+            ('split-entire-inputstream-to-chunk-size', ['1000000']),
+            ("group-num", ["1"]),
+            ('duplicate-input-stream', ['600']),
+            ('unique', ['true']),
+            ('unique-frequency', ['10']),
+            ('use-soa', ['false']),
+            ('result-capacity', ['80000000']),
+            ('use-uvm', ['false']),
+            ('data-buffer-fetch-size', ['25600000']),
+            ('add-aan-start', ['512']),
+            ('add-aas-interval', ['32']),
+            ('active-threshold', ['10']),
+            ('precompute-cutoff', ['-1']),
+            ("precompute-depth", ["3"]),
+            ("compress-prec-table", ['true']),
+            ("tuning", ['true']),
+        ],
+    },
+
+    'exp_times'    : 1,
+    'out_prefix'   : 'output',
+    'input_suffix' : '1MB'
+}
+
+
+
+

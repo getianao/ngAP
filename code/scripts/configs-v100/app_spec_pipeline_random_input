@@ -1,0 +1,103 @@
+{
+    'root' : '/home/tge/workspace/gpunfa-artifact/gpunfa_benchmarks',
+    'apps' : 
+    [
+        {
+            'name' : 'Brill',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/Brill/benchmarks/automata/brill.anml'
+        },
+
+        {
+            'name' : 'ClamAV',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/ClamAV/benchmarks/automata/clamav.anml'
+        },
+
+
+        {
+            'name' : 'CRISPR_CasOFFinder',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/CRISPR/benchmarks/CasOFFinder/automata/CRISPR_CasOFFinder_2000.anml'
+        },
+
+        {
+            'name' : 'CRISPR_CasOT',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/CRISPR/benchmarks/CasOT/automata/CRISPR_CasOT_2000.anml'
+        },
+
+        {
+            'name' : 'EntityResolution',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/EntityResolution/benchmarks/automata/er_10000names.anml'
+        },
+
+        {
+            'name' : 'Hamming_l18d3',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/Hamming/benchmarks/N1000_l18_d3/automata/ham_1000_3.anml'
+        },
+
+        {
+            'name' : 'Levenshtein_l19d3',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/Levenshtein/benchmarks/N1000_l19_d3/automata/lev_1000_3.anml'
+        },
+
+        {
+            'name'  : 'Protomata',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/Protomata/benchmarks/automata/protomata.anml'
+        },
+
+        {
+            'name' : 'Snort',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/Snort/benchmarks/automata/snort.anml'
+        },
+
+        {
+            'name' : 'YARA',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'AutomataZoo/YARA/benchmarks/YARA/automata/YARA.anml'
+        },
+
+	{
+            'name' : 'Bro217',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'Regex/Bro217/anml/bro217.anml'
+        },
+
+        {
+            'name' : 'ExactMath',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'Regex/ExactMath/anml/exactmath.anml'
+        },
+
+        {
+            'name' : 'Ranges05',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'Regex/Ranges05/anml/ranges05.anml'
+        },
+
+        {
+            'name' : 'Ranges1',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'Regex/Ranges1/anml/ranges1.anml'
+        },
+
+        {
+            'name' : 'TCP',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'Regex/TCP/anml/automata_0.anml'
+        },
+
+        {
+            'name' : 'PowerEN',
+            'input' : '../../gpunfa-pipeline/dataset/random.txt',
+            'automata' : 'ANMLZoo/PowerEN/anml/automata_0.anml'
+        }
+    ]
+}
+

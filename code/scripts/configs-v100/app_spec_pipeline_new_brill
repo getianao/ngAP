@@ -1,0 +1,16 @@
+{
+    "root": "/home/tge/workspace/automata_benchmark_original",
+    "apps": [
+        {
+            "name": "Brill",
+            "input": "AutomataZoo/Brill/benchmarks/inputs/brown_corpus.txt",
+            "mnrl": "AutomataZoo/Brill/benchmarks/automata/brill.mnrl",
+            "short_name": "Brill",
+            "anml_no_ORs": "AutomataZoo/Brill/benchmarks/anml_remove_or/automata_0.anml",
+            "optimized_ANML": "AutomataZoo/Brill/benchmarks/optimized_ANML/automata_0.anml",
+            "hs": "AutomataZoo/Brill/benchmarks/hs/automata.hs",
+            "automata": "AutomataZoo/Brill/benchmarks/anml_remove_or/automata_0.anml",
+            "quick_validation": "9038877",
+        },
+    ]
+}

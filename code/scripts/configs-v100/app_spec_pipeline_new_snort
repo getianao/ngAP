@@ -1,0 +1,16 @@
+{
+    "root": "/home/tge/workspace/automata_benchmark_original",
+    "apps": [
+        {
+            "name": "Snort",
+            "input": "AutomataZoo/Snort/benchmarks/inputs/wrccdc2012.pcap",
+            "mnrl": "AutomataZoo/Snort/benchmarks/automata/snort.mnrl",
+            "short_name": "Snort",
+            "anml_no_ORs": "AutomataZoo/Snort/benchmarks/anml_remove_or/automata_0.anml",
+            "optimized_ANML": "AutomataZoo/Snort/benchmarks/optimized_ANML/automata_0.anml",
+            "hs": "AutomataZoo/Snort/benchmarks/hs/automata.hs",
+            "automata": "AutomataZoo/Snort/benchmarks/anml_remove_or/automata_0.anml",
+            "quick_validation": "128293",
+        },
+    ]
+}

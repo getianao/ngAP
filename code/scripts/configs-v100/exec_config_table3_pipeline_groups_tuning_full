@@ -1,0 +1,34 @@
+{
+    "exp_parameters" : {
+
+        "oa-nonblocking-all-p3r1-tuning-full" : [
+            ("exec", 'pipeline', 'nocombination'),
+            ("algorithm", ["nonblockingallgroups"]),
+            ("input-start-pos", ["0"]),
+            ("input-len", ["1000000"]),
+            ('split-entire-inputstream-to-chunk-size', ['1000000']),
+            ("group-num", ['1', '2', '5', '10', '20', '50', '100']),
+            ('duplicate-input-stream', ['600']),
+            ('unique', ['false']),
+            ('unique-frequency', ['10']),
+            ('use-soa', ['false']),
+            ('result-capacity', ['80000000']),
+            ('use-uvm', ['false']),
+            ('data-buffer-fetch-size', ['256', '512', '1024', '5120', '10240', '51200', '256000', '25600000',]),
+            ('add-aan-start', ['256']),
+            ('add-aas-interval', ['32', '128', '256', '512', '1024', '2560']),
+            ('active-threshold', ['0', '8', '16', '24', '32']),
+            ('precompute-cutoff', ['-1']),
+            ("precompute-depth", ["2", "3"]),
+            ("compress-prec-table", ['true']),
+        ],
+    },
+
+    'exp_times'    : 1,
+    'out_prefix'   : 'output',
+    'input_suffix' : '1MB'
+}
+
+
+
+

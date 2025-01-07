@@ -1,0 +1,103 @@
+{
+    'root' : '/home/hyliu/gpunfa_benchmarks',
+    'apps' : 
+    [
+        {
+            'name' : 'Brill',
+            'input' : 'AutomataZoo/Brill/benchmarks/inputs/brown_corpus.txt',
+            'automata' : 'AutomataZoo/Brill/benchmarks/automata/brill.anml'
+        },
+
+        {
+            'name' : 'ClamAV',
+            'input' : 'AutomataZoo/ClamAV/benchmarks/inputs/clamav.input',
+            'automata' : 'AutomataZoo/ClamAV/benchmarks/automata/clamav.anml'
+        },
+
+
+        {
+            'name' : 'CRISPR_CasOFFinder',
+            'input' : 'AutomataZoo/CRISPR/benchmarks/CasOFFinder/inputs/10MB_G.dna',
+            'automata' : 'AutomataZoo/CRISPR/benchmarks/CasOFFinder/automata/CRISPR_CasOFFinder_2000.anml'
+        },
+
+        {
+            'name' : 'CRISPR_CasOT',
+            'input' : 'AutomataZoo/CRISPR/benchmarks/CasOT/inputs/10MB_H.dna',
+            'automata' : 'AutomataZoo/CRISPR/benchmarks/CasOT/automata/CRISPR_CasOT_2000.anml'
+        },
+
+        {
+            'name' : 'EntityResolution',
+            'input' : 'AutomataZoo/EntityResolution/benchmarks/inputs/1m_names.input',
+            'automata' : 'AutomataZoo/EntityResolution/benchmarks/automata/er_10000names.anml'
+        },
+
+        {
+            'name' : 'Hamming_l18d3',
+            'input' : 'AutomataZoo/Hamming/benchmarks/N1000_l18_d3/inputs/10MB_D.DNA',
+            'automata' : 'AutomataZoo/Hamming/benchmarks/N1000_l18_d3/automata/ham_1000_3.anml'
+        },
+
+        {
+            'name' : 'Levenshtein_l19d3',
+            'input' : 'AutomataZoo/Levenshtein/benchmarks/N1000_l19_d3/inputs/10MB_A.dna',
+            'automata' : 'AutomataZoo/Levenshtein/benchmarks/N1000_l19_d3/automata/lev_1000_3.anml'
+        },
+
+        {
+            'name'  : 'Protomata',
+            'input' : 'AutomataZoo/Protomata/benchmarks/inputs/30k_prots.input',
+            'automata' : 'AutomataZoo/Protomata/benchmarks/automata/protomata.anml'
+        },
+
+        {
+            'name' : 'Snort',
+            'input' : 'AutomataZoo/Snort/benchmarks/inputs/wrccdc2012.pcap',
+            'automata' : 'AutomataZoo/Snort/benchmarks/automata/snort.anml'
+        },
+
+        {
+            'name' : 'YARA',
+            'input' : 'AutomataZoo/YARA/benchmarks/YARA/inputs/malware_malz2.input',
+            'automata' : 'AutomataZoo/YARA/benchmarks/YARA/automata/YARA.anml'
+        },
+
+	{
+            'name' : 'Bro217',
+            'input' : 'Regex/Bro217/inputs/Bro217_10MB_depth_s0_p0.75.trace.input',
+            'automata' : 'Regex/Bro217/anml/bro217.anml'
+        },
+
+        {
+            'name' : 'ExactMath',
+            'input' : 'Regex/ExactMath/inputs/exact-math_depth_s0_p0.75.trace.input',
+            'automata' : 'Regex/ExactMath/anml/exactmath.anml'
+        },
+
+        {
+            'name' : 'Ranges05',
+            'input' : 'Regex/Ranges05/inputs/ranges05_depth_s0_p0.75.trace.input',
+            'automata' : 'Regex/Ranges05/anml/ranges05.anml'
+        },
+
+        {
+            'name' : 'Ranges1',
+            'input' : 'Regex/Ranges1/inputs/ranges1_depth_s0_p0.75.trace.input',
+            'automata' : 'Regex/Ranges1/anml/ranges1.anml'
+        },
+
+        {
+            'name' : 'TCP',
+            'input' : 'Regex/TCP/inputs/TCP_depth_s0_p0.75.trace.input',
+            'automata' : 'Regex/TCP/anml/automata_0.anml'
+        },
+
+        {
+            'name' : 'PowerEN',
+            'input' : 'ANMLZoo/PowerEN/inputs/poweren_1MB.input',
+            'automata' : 'ANMLZoo/PowerEN/anml/automata_0.anml'
+        }
+    ]
+}
+
