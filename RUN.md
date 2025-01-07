@@ -15,10 +15,13 @@ time ${NGAP_ROOT}/scripts/run_throughput_NAP_breakdown.sh
 time ${NGAP_ROOT}/scripts/run_ncu.sh
 ```
 
+
 Plot
 ``` bash
 # Throughput
-${NGAP_ROOT}/scripts/gen-throughput-fig13tab4.sh
+# ${NGAP_ROOT}/scripts/gen-throughput-fig13tab4.sh
+python ${NGAP_ROOT}/scripts/plot_throughput_gpu_sota.py
+python ${NGAP_ROOT}/scripts/table_throughput.py
 # Latency
 ${NGAP_ROOT}/scripts/gen-latency-fig20tab6.sh
 # Breakdown

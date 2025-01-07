@@ -30,6 +30,7 @@ RUN conda init bash
 RUN /bin/bash -c "source /root/.bashrc"
 RUN conda install -y numpy scipy pandas seaborn -c conda-forge
 RUN pip install https://github.com/getianao/figurePlotter/archive/refs/tags/v0.23.9.14.tar.gz
+RUN pip install pynvml psutil
 
 ENV NGAP_ROOT="/ngAP"
 ENV PATH="/ngAP/code/build/bin:${PATH}"

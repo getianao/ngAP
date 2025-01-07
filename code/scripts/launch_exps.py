@@ -463,8 +463,8 @@ class Config:
                             "dram__bytes_write",
                         ]
 
-                        # cmd = "ncu --metrics " + ','.join(metric_list) + " -f -o " + outfile + " " + cmd
-                        cmd = "ncu --set full -f -o " + outfile + " " + cmd
+                        cmd = "ncu --metrics " + ','.join(metric_list) + " -f -o " + outfile + " " + cmd
+                        # cmd = "ncu --set full -f -o " + outfile + " " + cmd
                         prog_output = outfile + "_ncu.txt"
                     else:
                         prog_output = outfile + ".txt"
