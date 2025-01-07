@@ -39,7 +39,7 @@ configs_dict = {
     # "oa-nonblocking-default-128-best": ["NAP-default-128", 63.2],
     "oa-nonblocking-default-256-best": ["NAP-default-256", 63.3],
     
-    "oa-nonblocking-all-best-e2": ["ngAP-best-e2", 101],
+    "oa-nonblocking-all-best-e2": ["ngAP-best", 101],
     "oa-nonblocking-all-best": ["NAP-Best", 100],
     
     "o0-blocking-breakdown_": ["Blocking", 81],
@@ -51,7 +51,7 @@ configs_dict = {
     
     "oa-nonblocking-default-best-e1": ["ngAP-default-e1", 91],
     # "oa-nonblocking-default-best-e2p": ["ngAP-default-e2p", 93],
-    "oa-nonblocking-default-best-e2": ["ngAP-default-e2", 92],
+    "oa-nonblocking-default-best-e2": ["ngAP-default", 92],
     
     "oa-nonblocking-default-best": ["NAP", 63.5],
 }
@@ -116,7 +116,7 @@ def merge_csv(path_list, save_path):
   # data = data.drop('App', axis=0)  
   data = data.set_index('App')
   data = figurePlotter.exclude_and_sort_data(
-          data,  row_dict=apps_dict2,  column_dict=configs_dict)
+          data,  row_dict=apps_dict2_all,  column_dict=configs_dict)
   data = figurePlotter.rename_data(data, row_dict=apps_dict2,  column_dict=configs_dict)
   # data = data.T
 
@@ -192,15 +192,14 @@ if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
     # result_folder = "../ref_results/"
     result_folder = "../results/"
-    path1 = result_folder+"raw/throughput_gpu_nap_best"
+    # path1 = result_folder+"raw/throughput_gpu_nap_best"
+    path1 = result_folder+"/raw/throughput_gpu_nap_best_e2"
+
     path2 = result_folder+"raw/throughput_gpu_sota_best"
     path3 = result_folder+"raw/throughput_gpu_runahead"
     path4 = result_folder+"raw/throughput_cpu"
-    path5 = result_folder+"/raw/throughput_gpu_nap_default_adp"
-
-    path6 = result_folder+"/raw/throughput_gpu_nap_default_adp_e1"
-    path7 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2"
-    path8 = result_folder+"/raw/throughput_gpu_nap_best_e2"
+    # path5 = result_folder+"/raw/throughput_gpu_nap_default_adp"
+    path5 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2"
 
     paths = []
     paths.append(path1)
@@ -208,16 +207,10 @@ if __name__ == "__main__":
     paths.append(path3)
     paths.append(path4)
     paths.append(path5)
-    
-    paths.append(path6)
-    paths.append(path7)
-    paths.append(path8)
-    
-    save_path = result_folder+"/tab4_throughput_o4.csv"
 
+    save_path = result_folder+"/tab4_throughput_o4.csv"
     df = merge_csv(paths, save_path)
-    
     print(df)
-    
     lp = LatexPrinter(df)
-    lp.gen_table_latex()
+    tex_file_path = result_folder + "throughput_all_o4.tex"
+    lp.gen_table_latex(tex_file_path)

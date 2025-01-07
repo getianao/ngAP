@@ -192,6 +192,6 @@ if __name__ == "__main__":
     paths.append(path4)
     plot(
         data_paths=paths,
-        figurePath=result_folder+"fig13_throughput.pdf",
+        figurePath=result_folder+"throughput_gpu_sota_o4.pdf",
         ylabel="Throughput\nNormalized to GPU-NFA",
     )

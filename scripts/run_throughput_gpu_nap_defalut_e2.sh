@@ -20,6 +20,6 @@ ${VALI}  --timeout-mins=60 --csvdest=./results/raw/throughput_gpu_nap_default_ad
 
 # config: [NAP-default'], apps: [part 3]
 APPS="app_spec_ngap_new_quickvalidation_part3" \
-CONFIGS="exec_config_ngap_groups_nap_default_e2_4degree" \
+CONFIGS="exec_config_ngap_groups_nap_default_4degree_e2" \
 ./run_throughput.sh --keywords=../../code/scripts/collect_keyword_list_throughput.txt \
 ${VALI}  --timeout-mins=60 --csvdest=./results/raw/throughput_gpu_nap_default_adp_e2/throughput_gpu_nap_default_e2_part3.csv

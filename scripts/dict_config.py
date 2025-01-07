@@ -109,6 +109,43 @@ apps_dict2 = {
     "TCP": ["TCP", 45],
 }
 
+apps_dict2_all = {
+    # AutomataZoo
+    "APPRNG4": ["APR", 1],
+    "Brill": ["Brill", 2],
+    "CRISPR_CasOFFinder": ["CRP1", 3],
+    "CRISPR_CasOT": ["CRP2", 4],
+    "smallClamAV": ["CAV\'", 5],          # 4degrees, 256states
+    "ClamAV": ["CAV", 6],          # 4degrees,  # must behind small*
+    "EntityResolution": ["ER", 7],
+    "FileCarving": ["FC", -8],     # 4degrees, 256states
+    "smallFileCarving": ["FC\'", -9],     # 4degrees, 256states
+    "Hamming_N1000_l18_d3": ["HM", 10],
+    "Hamming_N1000_l22_d5": ["HM2", -11],
+    "Hamming_N1000_l31_d10": ["HM3", -12],
+    "Levenshtein_l19d3": ["LV", 13],
+    "Levenshtein_l24d5": ["LV2", -14],
+    "Protomata": ["Pro", 15],
+    "RandomForest_20_400_200": ["RF", 16],
+    "RandomForest_20_400_270": ["RF2", -17],
+    "RandomForest_20_800_200": ["RF3", -18],
+    "SeqMatch_BIBLE_w6_p6": ["SM", 19],
+    "SeqMatch_BIBLE_w6_p10": ["SM2", -20],
+    "smallSnort": ["Snort\'", 21],       # 4degrees, 256states
+    "Snort": ["Snort", 22],       # 4degrees, 256states
+    "YARA": ["YARA", 23],         # 256states
+    # ANMLZoo
+    "Dotstar": ["DS", 31],
+    "Fermi": ["Fermi", -32],
+    "PowerEN": ["PEN", 33],
+    # Regex
+    "Bro217": ["Bro", 41],
+    "ExactMath": ["EM", 42],
+    "Ranges1": ["Ran1", 43],
+    "Ranges05": ["Ran5", 44],
+    "TCP": ["TCP", 45],
+}
+
 apps_dict_small2 = {
     # AutomataZoo
     "APPRNG4": ["APR", 1],
