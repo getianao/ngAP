@@ -118,7 +118,7 @@ advanceAndFilterNonBlockingAllE2Groups(NonBlockingBuffer nblb,
         }
       }
     }
-    // #pragma unroll 4
+#pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
       if (symbol_set.test(rneighbor, rsymbol)) {

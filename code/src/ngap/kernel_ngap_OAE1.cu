@@ -67,7 +67,7 @@ advanceAndFilterNonBlockingAllE1Groups(NonBlockingBuffer nblb,
     uint8_t rsymbol = arr_input_streams[riter + 1];
     int rn_start = csr.GetNeighborListOffset(rvertex);
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
-    // #pragma unroll 4
+#pragma unroll 2
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
       if (symbol_set.test(rneighbor, rsymbol)) {

@@ -45,7 +45,7 @@
             ('use-soa', ['false']),
             ('result-capacity', ['54619400']),
             ('use-uvm', ['false']),
-            ('data-buffer-fetch-size', ['2560000']),
+            ('data-buffer-fetch-size', ['25600']),
             ('add-aan-start', ['1000000']),
             ('add-aas-interval', ['1024']),
             ('active-threshold', ['0']),
@@ -523,8 +523,8 @@
             ('use-uvm', ['false']),
             ('data-buffer-fetch-size', ['25600']),
             ('add-aan-start', ['256']),
-            ('add-aas-interval', ['10240']),
-            ('active-threshold', ['32']),
+            ('add-aas-interval', ['256']),
+            ('active-threshold', ['0']),
             ('precompute-cutoff', ['-1']),
             ("precompute-depth", ["2"]),
             ("compress-prec-table", ['true']),
@@ -880,14 +880,14 @@
             ('split-entire-inputstream-to-chunk-size', ['1000000']),
             ("group-num", ["1"]),
             ('duplicate-input-stream', ['600']),
-            ('unique', ['false']),
+            ('unique', ['true']),
             ('unique-frequency', ['10']),
             ('use-soa', ['false']),
             ('result-capacity', ['54619400']),
             ('use-uvm', ['false']),
-            ('data-buffer-fetch-size', ['25600']),
-            ('add-aan-start', ['256']),
-            ('add-aas-interval', ['256']),
+            ('data-buffer-fetch-size', ['512']),
+            ('add-aan-start', ['4096']),
+            ('add-aas-interval', ['4096']),
             ('active-threshold', ['0']),
             ('precompute-cutoff', ['-1']),
             ("precompute-depth", ["3"]),
@@ -904,7 +904,3 @@
     'out_prefix'   : 'output',
     'input_suffix' : '1MB'
 }
-
-
-
-

@@ -62,7 +62,7 @@ advanceAndFilterNonBlockingR1Groups(NonBlockingBuffer nblb,
     int rn_end = rn_start + csr.GetNeighborListLength(rvertex);
     // if (csr.GetNeighborListLength(rvertex) > 3)
     //   printf("%d, ", csr.GetNeighborListLength(rvertex));
-    // #pragma unroll 4
+  #pragma unroll 4
     while (rn_start < rn_end) {
       int rneighbor = csr.d_column_indices[rn_start++];
       if (symbol_set.test(rneighbor, rsymbol)) {

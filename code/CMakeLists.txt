@@ -18,14 +18,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17 -lineinfo --expt-extended-lambda -O3 -Wno-deprecated-gpu-targets -arch=sm_86 --keep")
-# set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17 -lineinfo --expt-extended-lambda -O3 -Wno-deprecated-gpu-targets -arch=sm_70 --keep")
+# set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17 -lineinfo --expt-extended-lambda -O3 -Wno-deprecated-gpu-targets -arch=sm_86 --keep")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17 -lineinfo --expt-extended-lambda -O3 -Wno-deprecated-gpu-targets -arch=sm_70 --keep")
 # set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17 -lineinfo --expt-extended-lambda -g -G -Wno-deprecated-gpu-targets -arch=sm_86")
 # -arch=sm_86
 
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES 86)
-endif()
 
 add_definitions(-DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT)
 
