@@ -193,12 +193,16 @@ public:
   // }
 
   void release() {
-    delete[] h_row_offsets;
-    delete[] h_column_indices;
+    if (edgesNum > 0) {
+      delete[] h_row_offsets;
+      delete[] h_column_indices;
+    }
   }
   void releaseDevice() {
-    cudaFree((void *)d_column_indices);
-    cudaFree((void *)d_row_offsets);
+    if (edgesNum > 0) {
+      cudaFree((void *)d_column_indices);
+      cudaFree((void *)d_row_offsets);
+    }
   }
 
   void moveToDevice() {
