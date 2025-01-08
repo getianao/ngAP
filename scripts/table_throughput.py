@@ -116,8 +116,9 @@ def merge_csv(path_list, save_path):
   # data = data.drop('App', axis=0)  
   data = data.set_index('App')
   data = figurePlotter.exclude_and_sort_data(
-          data,  row_dict=apps_dict2,  column_dict=configs_dict)
-  data = figurePlotter.rename_data(data, row_dict=apps_dict2,  column_dict=configs_dict)
+          data,  row_dict=apps_dict2_all,  column_dict=configs_dict)
+  data = figurePlotter.rename_data(data, row_dict=apps_dict2_all,  column_dict=configs_dict)
+
   # data = data.T
 
   

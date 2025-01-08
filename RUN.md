@@ -40,8 +40,16 @@ time ${NGAP_ROOT}/scripts/run-throughput.sh
 Plot
 ``` bash
 # Throughput
-
+python ${NGAP_ROOT}/scripts/plot_throughput_gpu_sota_v100.py
 # Roofline
 
 # vs3090
+python ${NGAP_ROOT}/scripts/plot_throughput_gpu_ngap_v100_3090.py
+```
+
+
+
+``` bash
+# Fix smallCAV for asyncap
+asyncap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/inputs/clamav.input --app-name=smallClamAV  --algorithm=runahead  --input-len=1000000  --report-off=true  --duplicate-input-stream=600  --one-output-capacity=10461940  --scanning-R=999999999  --block-size=128  --record-ir=0  --blockDimX=-1  --num-streams=4  --merge-cc=4  --shrmem-wl=1  --shr_wl_len=4  --remove-degree=true  --quit-degree=false --quick-validation=1 --validation=false
 ```

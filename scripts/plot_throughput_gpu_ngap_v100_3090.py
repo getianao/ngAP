@@ -10,14 +10,17 @@ from dict_config import *
 configs_dict = {
     # sota
     "before-infant_": ["iNFAnt", -1],
+    "before-nfacg_-v100": ["NFA-CG-v100", -2],
     "before-nfacg_": ["NFA-CG", 2],
     "before-newtran-nt_": ["NT", -3],
     "before-newtran-ntmac_": ["NT-MaC", -4],
     "before-hotstarttt_": ["HotStartTT", -5],
-    "before-hotstart-nt_": ["HotStart", 10],
+    "before-hotstart-nt_-v100": ["GPU-NFA-v100", -10],
+    "before-hotstart-nt_": ["GPU-NFA", 10],
     "before-hotstart-ntmac_": ["HotStart-Mac", -7],
     "before-hyperscan_": ["HyperScan", -8],
-    "before-runahead-cc4_": ["Runahead", 9],
+    "before-runahead-cc4_-v100": ["AsyncAP-v100", -9],
+    "before-runahead-cc4_": ["AsyncAP", 9],
     
     # NAP
     "o0-blocking_": ["O0Blocking", -50],
@@ -35,47 +38,26 @@ configs_dict = {
     "oa-nonblocking-all-p2r1f_": ["OAp2r1f", -61],
     "oa-nonblocking-all-p3r1_": ["OAp3r1", -62],
     "oa-nonblocking-all-p3r1f_": ["OAp3r1f", -63],
-    "oa-nonblocking-all-best": ["NAP-Best", -64],
+    # "oa-nonblocking-default-32-best": ["ngAP-default-32", 63.1],
+    # "oa-nonblocking-default-128-best": ["ngAP-default-128", 63.2],
+    "oa-nonblocking-default-256-best": ["ngAP-default-256", -63.3],
+    "oa-nonblocking-default-best-v100": ["ngAP-default-v100", -63.5],
+    "oa-nonblocking-default-best-e2-v100": ["ngAP-default-v100", -63.5],
+    "oa-nonblocking-default-best-e2": ["ngAP-default", 63.5],
+    "oa-nonblocking-all-best-uncomp": ["ngAP-Best-Uncomp", -63.6],
+    "oa-nonblocking-all-best-v100": ["ngAP-best-v100", -63.7],
+    "oa-nonblocking-all-best-e2-v100": ["ngAP-best-v100", -63.7],
+    "oa-nonblocking-all-best-e2": ["ngAP-best", 64],
+    # "oa-nonblocking-all-best": ["ngAP-best", 64],
     
-
-    
-    "o0-blocking-breakdown_": ["BAP", 81],
-    "o0-nonblocking-NAP-breakdown_": ["ngAP", 82],
-    "o1-nonblocking-breakdown_": ["ngAP+$\mathregular{O^1}$", 83],
+    "o0-blocking-breakdown_": ["BAP", -81],
+    "o0-nonblocking-NAP-breakdown_": ["ngAP", --82],
+    "o1-nonblocking-breakdown_": ["ngAP+$\mathregular{O^1}$", -83],
     # "o4-nonblocking-r-breakdown_": ["NAP+O3", -84],
-    "o3-nonblocking-p-breakdown_": ["ngAP+$\mathregular{O^2}$", 85],
-    "oa-nonblocking-all-breakdown_": ["ngAP+$\mathregular{O^3}$", 86],
-    "oa-nonblocking-all-e2-breakdown_": ["ngAP+$\mathregular{O^4}$", 87],
+    "o3-nonblocking-p-breakdown_": ["ngAP+$\mathregular{O^2}$", -85],
+    "oa-nonblocking-all-breakdown_": ["ngAP+$\mathregular{O^3}$", -86],
 }
 
-configs_groups = [
-    ["o0-blocking_"],
-    ["o0-nonblocking-NAP_"],
-    ["o1-nonblocking_"],
-    [
-        "o4-nonblocking-r1_",
-        "o4-nonblocking-r1f_",
-        "o4-nonblocking-r2_",
-        "o4-nonblocking-r2f_",
-    ],
-    ["o3-nonblocking-p1_", "o3-nonblocking-p2_", "o3-nonblocking-p3_"],
-    [
-        "oa-nonblocking-all-p2r1_",
-        "oa-nonblocking-all-p2r1f_",
-        "oa-nonblocking-all-p3r1_",
-        "oa-nonblocking-all-p3r1f_",
-    ],
-    ["oa-nonblocking-all-e2-p3r1_", "oa-nonblocking-all-e2-p3r1f_"],
-]
-configs_groups_names = [
-    "o0-blocking-breakdown_",
-    "o0-nonblocking-NAP-breakdown_",
-    "o1-nonblocking-breakdown_",
-    "o4-nonblocking-r-breakdown_",
-    "o3-nonblocking-p-breakdown_",
-    "oa-nonblocking-all-breakdown_",
-    "oa-nonblocking-all-e2-breakdown_",
-]
 
 def normalize_data(data, normalize_to_column_name):
   row_names = data.index.tolist()
@@ -89,11 +71,19 @@ def normalize_data(data, normalize_to_column_name):
     data.loc[row_name][data.loc[row_name] < 0] = np.nan
   return data
 
-def remove_nan(data, value):
+def normalize_v100_data(data):
+  for column_name in data.keys():
+    if not column_name.endswith("-v100"):
+      print("#############", column_name, column_name+'-v100', data.loc[:, column_name+'-v100'])
+      data.loc[:, column_name] /= data.loc[:, column_name+'-v100']
+  return data
+
+def remove_error(data, value):
   row_names = data.index.tolist()
   # error_value = 0
   for row_name in row_names:
     data.loc[row_name][data.loc[row_name].isna()] = value
+    data.loc[row_name][data.loc[row_name] < 0] = value
   return data
 
 def save_to_csv(data, csv_path):
@@ -107,7 +97,7 @@ def geo_mean(x):
     return np.exp(a.mean())
 
 
-def plot(path_list, figurePath, ylabel, ylim, normalize=False):
+def plot(path_list, figurePath, ylabel):
     # Load data
     data = pd.DataFrame()
     for path in path_list:
@@ -121,62 +111,73 @@ def plot(path_list, figurePath, ylabel, ylim, normalize=False):
             df = df.T
             df.columns = df.loc["config"]
             df = df.drop('config', axis=0)
+            if 'v100' in path:
+                df = df.rename(columns=lambda x: x + '-v100')
             df["App"] = df.index.tolist()
             data_apps = pd.concat([data_apps, df])
             # print(data_apps, '\n')
+
+        print(data_apps)
+
         if data.empty:
             data = data_apps
         else:
             data = data.merge(data_apps, how='outer', on = "App")
 
-    print(data)
     # data.columns = data.loc['App']
     # data = data.drop('App', axis=0)
     data = data.set_index('App')
-
-    data = figurePlotter.merge_columns(data, configs_groups, configs_groups_names)
+    print(data)
+    
+    data = normalize_v100_data(data)
+    print("Normalized data:\n", data)
+    print(data.columns)
     data = figurePlotter.exclude_and_sort_data(
-          data,  row_dict=apps_dict,  column_dict=configs_dict)
-    data = figurePlotter.rename_data(data, row_dict=apps_dict,  column_dict=configs_dict)
+          data,  row_dict=apps_dict_small,  column_dict=configs_dict)
+    data = figurePlotter.rename_data(data, row_dict=apps_dict_small,  column_dict=configs_dict)
+    data = remove_error(data, 0.16)
     print("Processed data:\n", data)
-    if normalize:
-        data = normalize_data(data, "BAP")
-        print("Normalized data:\n", data)
+    # save_to_csv(data, figurePath)
+    
 
     apps_labels = data.index.tolist()
     print("apps:", apps_labels)
-    # configs_labels = data.keys().values.tolist()
-    configs_labels = ['BAP', 'ngAP', 'ngAP+$\mathregular{O^1}$', 'ngAP+$\mathregular{O^2}$', 'ngAP+$\mathregular{O^3}$', 'ngAP+$\mathregular{O^4}$']
-
+    configs_labels = data.keys().values.tolist()
     print("configs_label:", configs_labels)
 
-    # save_to_csv(data, figurePath)
-
-    colorPalette = ["#4c95cb"]
-    colorPalette2 = ["#a0cc82"]
-    colorHatch = ["", "//", "xx", "..", "\\", "+", "--"]
+    colorPalette = [
+        "#ffdc6d",
+        "#a0cc82",
+        "#4c95cb",
+        "#f19b61",
+        "#ae8dca",
+        "#c1c1c1",
+        "#93bfcf",
+        "#3fcfad",
+    ]
+    colorHatch = ["", "..", "x", "/", "\\", ":", "--", ","]
     figurePlotter.bar(
         apps_labels,
         configs_labels,
         data.values,
-        plotSize=(5, 2.2),
-        filename=figurePath + "_avg.pdf",
+        plotSize=(15, 2.2),
+        filename=figurePath,
         groupsInterval=0.15,
         colorPalette=colorPalette,
         colorHatch=colorHatch,
         xyConfig={
             "xylabel": ["", ylabel],
             "xlim": [None, None],
-            "ylim": [0, 1],
+            "ylim": [0, 4],
             "labelExceedYlim": True,
             "xyscale": [None, None],
             "showxyTicksLabel": [True, True],
             "xyticksRotation": [30, 0],
-            "xyticksMajorLocator": [None, 0.2],
+            "xyticksMajorLocator": [None, 1],
         },
         averageConfig={
             "plotAverage": True,
-            "onlyAverage": True,
+            "onlyAverage": False,
             "labelAverage": True,
             "xlabel": "Gmean",
             "averageFunc": geo_mean,
@@ -190,52 +191,33 @@ def plot(path_list, figurePath, ylabel, ylim, normalize=False):
             "legend.handlelength": 2,
             "legend.handletextpad": 0.8,
         },
-        decimals=2,
-        # ticksFrontsize=14,
-        # ticksRotation=30,
-        # plotHline=False,
     )
-
-    colorPalette = ["#ffdc6d", "#a0cc82", "#4c95cb", "#f19b61", "#ae8dca"]
-    # figurePlotter.bar(
-    #     apps_labels,
-    #     configs_labels,
-    #     data.values,
-    #     ylabel,
-    #     filename=figurePath + ".pdf",
-    #     groupsInterval=0.15,
-    #     labelExceedYlim=True,
-    #     plotSize=(16, 3),
-    #     ylim=ylim,
-    #     yscale=None,
-    #     colorPalette=colorPalette,
-    #     colorHatch=colorHatch,
-    #     #  yMultipleLocator =50,
-    #     #  only_average=True,
-    #     decimals=2,
-    #     averageXlabel="GeoMean",
-    #     averageFunc=geo_mean,
-    #     ticksFrontsize=14,
-    #     ticksRotation=30,
-    # )
 
 
 if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
 
-    # path1 = "./results/raw/ncu/memory"
-    # paths = []
-    # paths.append(path1)
-    # # paths.append(path2)
-    # plot(path_list=paths,
-    #      figurePath="./results/ncu-memory.pdf",
-    #      ylabel="Global memory trasaction\n(Normalized to Blocking)", ylim=(0,50), normalize = True)
+
+    path1 = "../results/raw_v100/throughput_gpu_nap_best_e2/"
+    path2 = "../results/raw_v100/throughput_gpu_nap_default_adp_e2"
+    path3 = "../results/raw_v100/throughput_gpu_sota_best/"
+    path4 = "../results/raw_v100/throughput_gpu_runahead/"
     
+    path5 = "../results/raw/throughput_gpu_nap_best_e2/"
+    path6 = "../results/raw/throughput_gpu_nap_default_adp_e2"
+    path7 = "../results/raw/throughput_gpu_sota_best/"
+    path8 = "../results/raw/throughput_gpu_runahead/"
     
-    path1 = "../results/raw/ncu/l1cache"
     paths = []
     paths.append(path1)
-    # paths.append(path2)
+    paths.append(path2)
+    paths.append(path3)
+    paths.append(path4)
+    paths.append(path5)
+    paths.append(path6)
+    paths.append(path7)
+    paths.append(path8)
+
     plot(path_list=paths,
-         figurePath="../results/ncu-c1cache-o4",
-         ylabel="L1$ Hit Rate", ylim=(0,1))
+         figurePath="../results/throughput_gpu_ngap_v100_3090_o4.pdf",
+         ylabel="Throughput\nNormalized to V100")
