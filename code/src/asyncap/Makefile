@@ -5,7 +5,7 @@
 CC = g++
 AR = ar
 NVCC=nvcc
-SM=sm_86
+SM=sm_70
 
 # -I../mnrl/include
 CXXFLAGS= -std=c++14 -O3 -Iinclude -I../../include  -I../../include/commons -I../../include/pugixml -I../../include/gpunfautils -w
