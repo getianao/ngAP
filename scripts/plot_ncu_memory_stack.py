@@ -4,8 +4,7 @@ import pandas as pd
 import numpy as np
 import glob
 import seaborn as sns
-import figure_plotting.myplot as mp
-import figure_plotting.data_processing as dp
+import figurePlotter
 from dict_config import *
 
 configs_dict = {
@@ -46,12 +45,37 @@ configs_dict = {
     # "o4-nonblocking-r-breakdown_": ["NAP+O3", -84],
     "o3-nonblocking-p-breakdown_": ["ngAP+$\mathregular{O^2}$", 85],
     "oa-nonblocking-all-breakdown_": ["ngAP+$\mathregular{O^3}$", 86],
+    "oa-nonblocking-all-e2-breakdown_": ["ngAP+$\mathregular{O^4}$", 87],
 }
 
-configs_groups = [["o0-blocking_"], ["o0-nonblocking-NAP_"], ["o1-nonblocking_"], ["o4-nonblocking-r1_", "o4-nonblocking-r1f_", "o4-nonblocking-r2_", "o4-nonblocking-r2f_"],
-                  ["o3-nonblocking-p1_", "o3-nonblocking-p2_", "o3-nonblocking-p3_"], ["oa-nonblocking-all-p2r1_", "oa-nonblocking-all-p2r1f_", "oa-nonblocking-all-p3r1_", "oa-nonblocking-all-p3r1f_"]]
-configs_groups_names = ["o0-blocking-breakdown_", "o0-nonblocking-NAP-breakdown_", "o1-nonblocking-breakdown_",
-                        "o4-nonblocking-r-breakdown_", "o3-nonblocking-p-breakdown_", "oa-nonblocking-all-breakdown_"]
+configs_groups = [
+    ["o0-blocking_"],
+    ["o0-nonblocking-NAP_"],
+    ["o1-nonblocking_"],
+    [
+        "o4-nonblocking-r1_",
+        "o4-nonblocking-r1f_",
+        "o4-nonblocking-r2_",
+        "o4-nonblocking-r2f_",
+    ],
+    ["o3-nonblocking-p1_", "o3-nonblocking-p2_", "o3-nonblocking-p3_"],
+    [
+        "oa-nonblocking-all-p2r1_",
+        "oa-nonblocking-all-p2r1f_",
+        "oa-nonblocking-all-p3r1_",
+        "oa-nonblocking-all-p3r1f_",
+    ],
+    ["oa-nonblocking-all-e2-p3r1_", "oa-nonblocking-all-e2-p3r1f_"],
+]
+configs_groups_names = [
+    "o0-blocking-breakdown_",
+    "o0-nonblocking-NAP-breakdown_",
+    "o1-nonblocking-breakdown_",
+    "o4-nonblocking-r-breakdown_",
+    "o3-nonblocking-p-breakdown_",
+    "oa-nonblocking-all-breakdown_",
+    "oa-nonblocking-all-e2-breakdown_",
+]
 
 def normalize_data(data1, data2, normalize_to_column_name):
   row_names = data1.index.tolist()
@@ -80,7 +104,7 @@ def save_to_csv(data, csv_path):
   csv_file = os.path.splitext(os.path.abspath(csv_path))[0] + '.csv'
   print("Save data to", csv_file)
   data.to_csv(csv_file)
-  
+
 
 def geo_mean(x):
     a = np.log(x)
@@ -88,107 +112,139 @@ def geo_mean(x):
 
 
 def plot(path1, path2, figurePath, ylabel, ylim, normalize=False):
-  # Load data
-  data = pd.DataFrame()
-  def load_data(path):
-    print(path)
-    data_apps = pd.DataFrame()
-    csv_files = glob.glob(os.path.abspath(path)+'/*.{}'.format('csv'))
-    for file in csv_files:
-      df = pd.read_csv(file)
-      if df.empty:
-        continue
-      df = df.T
-      df.columns = df.loc["config"]
-      df = df.drop('config', axis=0)
-      df["App"] = df.index.tolist()
-      data_apps = pd.concat([data_apps, df])
-      # print(data_apps, '\n')
-    # if data.empty:
-    #   data = data_apps
-    # else:
-    #   data = data.merge(data_apps, how='outer', on = "App")
-    return data_apps
-  loads_data = load_data(path1)
-  stores_data = load_data(path2)
-  
-  # print(data)
-  # data.columns = data.loc['App']
-  # data = data.drop('App', axis=0)  
-  def proc_data(data):
-    data = data.set_index('App')
-    
-    data = dp.merge_columns_min(data, configs_groups, configs_groups_names)
-    data = dp.exclude_and_sort_data(
+    # Load data
+    data = pd.DataFrame()
+    def load_data(path):
+        print(path)
+        data_apps = pd.DataFrame()
+        csv_files = glob.glob(os.path.abspath(path)+'/*.{}'.format('csv'))
+        for file in csv_files:
+            df = pd.read_csv(file)
+            if df.empty:
+                continue
+            df = df.T
+            df.columns = df.loc["config"]
+            df = df.drop('config', axis=0)
+            df["App"] = df.index.tolist()
+            data_apps = pd.concat([data_apps, df])
+            # print(data_apps, '\n')
+        # if data.empty:
+        #   data = data_apps
+        # else:
+        #   data = data.merge(data_apps, how='outer', on = "App")
+        return data_apps
+    loads_data = load_data(path1)
+    stores_data = load_data(path2)
+
+    # print(data)
+    # data.columns = data.loc['App']
+    # data = data.drop('App', axis=0)
+    def proc_data(data):
+        data = data.set_index('App')
+
+        data = figurePlotter.merge_columns_min(data, configs_groups, configs_groups_names)
+        data = figurePlotter.exclude_and_sort_data(
             data,  row_dict=apps_dict,  column_dict=configs_dict)
-    data = dp.rename_data(data, row_dict=apps_dict,  column_dict=configs_dict)
-    print("Processed data:\n", data)
-    return data
-  loads_data = proc_data(loads_data)
-  stores_data = proc_data(stores_data)
-  
-  loads_data,  stores_data= normalize_data(loads_data, stores_data, "BAP")
-  print("Normalized loads_data:\n", loads_data)
-  print("Normalized stores_data:\n", stores_data)
+        data = figurePlotter.rename_data(
+            data, row_dict=apps_dict, column_dict=configs_dict
+        )
+        print("Processed data:\n", data)
+        return data
+    loads_data = proc_data(loads_data)
+    stores_data = proc_data(stores_data)
 
-  apps_labels = loads_data.index.tolist()
-  print("apps:", apps_labels)
-  # configs_labels = loads_data.keys().values.tolist()
-  configs_labels = ['BAP', 'ngAP', 'ngAP+$\mathregular{O^1}$', 'ngAP+$\mathregular{O^2}$', 'ngAP+$\mathregular{O^3}$']
-  stack_labels = ['Store', 'Load']
-  
-  print("configs_label:", configs_labels)
+    loads_data, stores_data = normalize_data(loads_data, stores_data, "BAP")
+    print("Normalized loads_data:\n", loads_data)
+    print("Normalized stores_data:\n", stores_data)
 
-  # save_to_csv(data, figurePath)
+    apps_labels = loads_data.index.tolist()
+    print("apps:", apps_labels)
+    # configs_labels = loads_data.keys().values.tolist()
+    configs_labels = [
+        "BAP",
+        "ngAP",
+        "ngAP+$\mathregular{O^1}$",
+        "ngAP+$\mathregular{O^2}$",
+        "ngAP+$\mathregular{O^3}$",
+        "ngAP+$\mathregular{O^4}$",
+    ]
+    stack_labels = ["Store", "Load"]
 
-  colorPalette = sns.color_palette("Blues", 1)
-  colorPalette2 = sns.color_palette("YlOrBr", 2)
-  colorPalette2 = ['#4c95cb']
-  colorPalette = ['#a0cc82']
-  colorHatch = ['', '//', 'xx', '..', '\\', '+', '--']
-  mp.bar(apps_labels, configs_labels, stores_data.values, ylabel, filename=figurePath+"_avg.pdf", groupsInterval=0.15, labelExceedYlim=True,
-         plotSize=(3.75, 2.2), 
-         ylim=ylim, 
-         yscale=None, colorPalette=colorPalette, legendCol = 5,
-        #  colorHatch = colorHatch, 
-         yMultipleLocator = 0.5,
-         averageXlabel="GeoMean", averageFunc=geo_mean,
-         stack=True, values2=loads_data.values, colorPalette2 = colorPalette2, stack_labels = stack_labels,
-         only_average=True,
-         decimals=2,
-         ticksFrontsize=14, ticksRotation=30,
-         plotHline = False)
-  
-  colorPalette = ['#ffdc6d', '#a0cc82', '#4c95cb', '#f19b61', '#ae8dca']
-  mp.bar(apps_labels, configs_labels, stores_data.values, ylabel, filename=figurePath+".pdf", groupsInterval=0.15, labelExceedYlim=True,
-        plotSize=(16, 3), 
-        ylim=ylim, 
-        yscale=None, colorPalette=colorPalette, legendCol = 5,
-      #  colorHatch = colorHatch, 
-        yMultipleLocator = 0.5,
-        averageXlabel="GeoMean", averageFunc=geo_mean,
-        stack=True, values2=loads_data.values, colorPalette2 = colorPalette2, stack_labels = stack_labels,
-        # only_average=True,
+    print("configs_label:", configs_labels)
+
+    # save_to_csv(data, figurePath)
+
+    colorPalette = sns.color_palette("Blues", 1)
+    colorPalette2 = sns.color_palette("YlOrBr", 2)
+    colorPalette2 = ["#4c95cb"]
+    colorPalette = ["#a0cc82"]
+    colorHatch = ["", "//", "xx", "..", "\\", "+", "--"]
+    figurePlotter.stack(
+        apps_labels,
+        configs_labels,
+        stores_data.values,
+        ylabel,
+        filename=figurePath + "_avg.pdf",
+        groupsInterval=0.15,
+        labelExceedYlim=True,
+        plotSize=(5, 2.2),
+        ylim=ylim,
+        yscale=None,
+        colorPalette=colorPalette,
+        legendCol=5,
+        #  colorHatch = colorHatch,
+        yMultipleLocator=0.5,
+        averageXlabel="GeoMean",
+        averageFunc=geo_mean,
+        stack=True,
+        values2=loads_data.values,
+        colorPalette2=colorPalette2,
+        stack_labels=stack_labels,
+        only_average=True,
         decimals=2,
-        ticksFrontsize=14, ticksRotation=45)
+        ticksFrontsize=14,
+        ticksRotation=30,
+    )
 
-
+    colorPalette = ["#ffdc6d", "#a0cc82", "#4c95cb", "#f19b61", "#ae8dca"]
+    # figurePlotter.stack(
+    #     apps_labels,
+    #     configs_labels,
+    #     stores_data.values,
+    #     ylabel,
+    #     filename=figurePath + ".pdf",
+    #     groupsInterval=0.15,
+    #     labelExceedYlim=True,
+    #     plotSize=(16, 3),
+    #     ylim=ylim,
+    #     yscale=None,
+    #     colorPalette=colorPalette,
+    #     legendCol=5,
+    #     #  colorHatch = colorHatch,
+    #     yMultipleLocator=0.5,
+    #     averageXlabel="GeoMean",
+    #     averageFunc=geo_mean,
+    #     stack=True,
+    #     values2=loads_data.values,
+    #     colorPalette2=colorPalette2,
+    #     stack_labels=stack_labels,
+    #     # only_average=True,
+    #     decimals=2,
+    #     ticksFrontsize=14,
+    #     ticksRotation=45,
+    # )
 
 
 if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
 
-    path1 = "./results/raw/ncu/memory-loads"
-    path2 = "./results/raw/ncu/memory-stores"
+    path1 = "../results/raw/ncu/memory-loads"
+    path2 = "../results/raw/ncu/memory-stores"
     # paths = []
     # paths.append(path1)
     # paths.append(path2)
     plot(path1, path2,
-         figurePath="./results/ncu-memory-stack",
+         figurePath="../results/ncu-memory-stack-o4",
          ylabel="# of Memory Requests\nNormalized to BAP", 
          ylim=(0, 2),
          normalize = True)
-    
-    
-    
-

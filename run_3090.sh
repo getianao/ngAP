@@ -6,4 +6,4 @@ time ${NGAP_ROOT}/scripts/run-latency.sh
 # time ${NGAP_ROOT}/scripts/run-breakdown.sh
 time ${NGAP_ROOT}/scripts/run_throughput_NAP_breakdown.sh
 # Profile
-# time ${NGAP_ROOT}/scripts/run_ncu.sh
+time ${NGAP_ROOT}/scripts/run_ncu.sh

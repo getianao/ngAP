@@ -1,9 +1,7 @@
-import sys
 import os
 import pandas as pd
 import numpy as np
 import glob
-import seaborn as sns
 import figurePlotter
 from dict_config import *
 
@@ -38,7 +36,8 @@ configs_dict = {
     # "oa-nonblocking-default-128-best": ["ngAP-default-128", 63.2],
     "oa-nonblocking-default-256-best": ["ngAP-default-256", 63.3],
     "oa-nonblocking-default-best": ["ngAP-default", 63.5],
-    "oa-nonblocking-all-best": ["ngAP-Best", 64],
+    "oa-nonblocking-all-best-uncomp": ["ngAP-Best-Uncomp", 63.6],
+    "oa-nonblocking-all-best": ["ngAP-best", 64],
     "o0-blocking-breakdown_": ["BAP", 81],
     "o0-nonblocking-NAP-breakdown_": ["ngAP", 82],
     "o1-nonblocking-breakdown_": ["ngAP+$\mathregular{O^1}$", 83],
@@ -46,35 +45,10 @@ configs_dict = {
     "o3-nonblocking-p-breakdown_": ["ngAP+$\mathregular{O^2}$", 85],
     "oa-nonblocking-all-breakdown_": ["ngAP+$\mathregular{O^3}$", 86],
     
-    "oa-nonblocking-all-e2_": ["ngAP+$\mathregular{O^4}$", 87],
+    # O4
+    "oa-nonblocking-default-best-e2": ["ngAP-default", 90],
+    "oa-nonblocking-all-best-e2": ["ngAP-best", 91],
 }
-
-# configs_groups = [["o0-blocking_"], ["o0-nonblocking-NAP_"], ["o1-nonblocking_"], ["o4-nonblocking-r1_", "o4-nonblocking-r1f_", "o4-nonblocking-r2_", "o4-nonblocking-r2f_"],
-#                   ["o3-nonblocking-p1_", "o3-nonblocking-p2_", "o3-nonblocking-p3_"], ["oa-nonblocking-all-p2r1_", "oa-nonblocking-all-p2r1f_", "oa-nonblocking-all-p3r1_", "oa-nonblocking-all-p3r1f_"]]
-configs_groups = [
-    ["o0-blocking_"],
-    ["o0-nonblocking-NAP_"],
-    ["o1-nonblocking_"],
-    [
-        "o4-nonblocking-r1_",
-        "o4-nonblocking-r1f_",
-        "o4-nonblocking-r2_",
-        "o4-nonblocking-r2f_",
-    ],
-    ["o3-nonblocking-p3_"],
-    ["oa-nonblocking-all-p3r1f_", "oa-nonblocking-all-p3r1_"],
-    ["oa-nonblocking-all-e2-p3r1_", "oa-nonblocking-all-e2-p3r1f_"],
-]
-
-configs_groups_names = [
-    "o0-blocking-breakdown_", # BAP
-    "o0-nonblocking-NAP-breakdown_", # ngAP
-    "o1-nonblocking-breakdown_", # ngAP+O1$
-    "o4-nonblocking-r-breakdown_",
-    "o3-nonblocking-p-breakdown_", # ngAP+O2
-    "oa-nonblocking-all-breakdown_", # ngAP+O3
-    "oa-nonblocking-all-e2_", # ngAP+O4
-]
 
 
 def normalize_data(data, normalize_to_column_name):
@@ -90,11 +64,12 @@ def normalize_data(data, normalize_to_column_name):
     return data
 
 
-def remove_nan(data, value):
+def remove_error(data, value):
     row_names = data.index.tolist()
     # error_value = 0
     for row_name in row_names:
         data.loc[row_name][data.loc[row_name].isna()] = value
+        data.loc[row_name][data.loc[row_name] < 0] = value
     return data
 
 
@@ -109,13 +84,13 @@ def geo_mean(x):
     return np.exp(a.mean())
 
 
-def plot(path_list, figurePath, ylabel):
-    # Load data
+def plot(data_paths, figurePath, ylabel):
+    # Load multiple data in multiple paths
     data = pd.DataFrame()
-    for path in path_list:
-        print(path)
+    for path in data_paths:
         data_apps = pd.DataFrame()
         csv_files = glob.glob(os.path.abspath(path) + "/*.{}".format("csv"))
+        print("Load from", path, ":", csv_files)
         for file in csv_files:
             df = pd.read_csv(file)
             if df.empty:
@@ -130,19 +105,19 @@ def plot(path_list, figurePath, ylabel):
             data = data_apps
         else:
             data = data.merge(data_apps, how="outer", on="App")
-
-    # data.columns = data.loc['App']
-    # data = data.drop('App', axis=0)
     data = data.set_index("App")
-    print(data)
-    print(data.columns)
-    data = figurePlotter.merge_columns(data, configs_groups, configs_groups_names)
-    data = figurePlotter.exclude_and_sort_data(data, row_dict=apps_dict2, column_dict=configs_dict)
-    print("Processed data:\n", data)
-    data = figurePlotter.rename_data(data, row_dict=apps_dict2, column_dict=configs_dict)
-    print("Processed data:\n", data)
-    data = normalize_data(data, "BAP")
-    print("Normalized data:\n", data)
+    print("raw_v100 data:==========================================\n", data)
+
+    data = figurePlotter.exclude_and_sort_data(
+        data, row_dict=apps_dict_small, column_dict=configs_dict
+    )
+    data = figurePlotter.rename_data(
+        data, row_dict=apps_dict_small, column_dict=configs_dict
+    )
+    data = remove_error(data, 0.16)
+    print("Processed data:==========================================\n", data)
+    data = normalize_data(data, "GPU-NFA")
+    print("Normalized data:==========================================\n", data)
 
     apps_labels = data.index.tolist()
     print("apps:", apps_labels)
@@ -199,14 +174,24 @@ def plot(path_list, figurePath, ylabel):
         },
     )
 
+
 if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
     # result_folder = "../ref_results/"
     result_folder = "../results/"
-    path1 = result_folder+"raw/throughput_gpu_nap_breakdown/"
+    # path1 = result_folder+"raw_v100/throughput_gpu_nap_best"
+    path1 = result_folder+"raw_v100/throughput_gpu_nap_best_e2"
+    path2 = result_folder+"raw_v100/throughput_gpu_sota_best"
+    path3 = result_folder+"raw_v100/throughput_gpu_runahead"
+    # path4 = result_folder+"/raw_v100/throughput_gpu_nap_default_adp"
+    path4 = result_folder+"/raw_v100/throughput_gpu_nap_default_adp_e2"
     paths = []
     paths.append(path1)
-    # paths.append(path2)
-    plot(path_list=paths,
-         figurePath=result_folder+"throughput_gpu_nap_breakdown_o4.pdf",
-         ylabel="Throughput\nNormalized to BAP")
+    paths.append(path2)
+    paths.append(path3)
+    paths.append(path4)
+    plot(
+        data_paths=paths,
+        figurePath=result_folder+"throughput_gpu_sota_o4_v100.pdf",
+        ylabel="Throughput\nNormalized to GPU-NFA",
+    )
