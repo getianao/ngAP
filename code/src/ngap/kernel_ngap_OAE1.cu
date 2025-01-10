@@ -219,11 +219,6 @@ advanceAndFilterNonBlockingAllE1Groups(NonBlockingBuffer nblb,
               d_buffer_idx[(old + i) % buffer_capacity_per_block] =
                   start_idx + i;
             }
-            for (int i = 0; i < number_idx; i++) {
-              d_buffer[(old + i) % buffer_capacity_per_block] = -1;
-              d_buffer_idx[(old + i) % buffer_capacity_per_block] =
-                  start_idx + i;
-            }
           }
           // If vertex < 0, add always active nodes, and fiter them.
           // If vertex > 0, do advance and filter.
