@@ -176,6 +176,16 @@ class LatexPrinter:
         for i in range(self.df.shape[0]):
             row = self.df.iloc[i].tolist()
             print(row)
+
+            max = -999
+            max_id = -1
+            for j in range(len(row)):
+                if isinstance(row[j], (int, float)):
+                    if row[j] > max:
+                        max = row[j]
+                        max_id = j
+            row[max_id] = self.bold(str(row[max_id]))
+
             row = [self.escape(str(col)) for col in row]
             row_length = len(row)
             tex_row = " & ".join(row)

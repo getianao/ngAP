@@ -114,8 +114,8 @@ def merge_csv(path_list, save_path):
   # data = data.drop('App', axis=0)  
   data = data.set_index('App')
   data = figurePlotter.exclude_and_sort_data(
-          data,  row_dict=apps_dict2,  column_dict=configs_dict)
-  data = figurePlotter.rename_data(data, row_dict=apps_dict2,  column_dict=configs_dict)
+          data,  row_dict=apps_dict2_all,  column_dict=configs_dict)
+  data = figurePlotter.rename_data(data, row_dict=apps_dict2_all,  column_dict=configs_dict)
   # data = data.T
 
   
@@ -174,6 +174,16 @@ class LatexPrinter:
         for i in range(self.df.shape[0]):
             row = self.df.iloc[i].tolist()
             print(row)
+
+            max = -999
+            max_id = -1
+            for j in range(len(row)):
+                if isinstance(row[j], (int, float)):
+                    if row[j] > max:
+                        max = row[j]
+                        max_id = j
+            row[max_id] = self.bold(str(row[max_id]))
+
             row = [self.escape(str(col)) for col in row]
             row_length = len(row)
             tex_row = " & ".join(row)
@@ -184,7 +194,6 @@ class LatexPrinter:
         print(self.letex_code)
         with open(tex_file_path, "w") as f:
             f.write(self.letex_code)
-        
 
 
 if __name__ == "__main__":

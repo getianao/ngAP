@@ -141,7 +141,7 @@ def plot(data_paths, figurePath, ylabel):
         apps_labels,
         configs_labels,
         data.values,
-        plotSize=(15, 2.2),
+        plotSize=(5 * 2.5, 1* 2.5),
         filename=figurePath,
         groupsInterval=0.15,
         colorPalette=colorPalette,

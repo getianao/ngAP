@@ -62,8 +62,8 @@ configs_groups = [
         "o4-nonblocking-r2f_",
     ],
     ["o3-nonblocking-p3_"],
-    ["oa-nonblocking-all-p3r1f_", "oa-nonblocking-all-p3r1_"],
-    ["oa-nonblocking-all-e2-p3r1_", "oa-nonblocking-all-e2-p3r1f_"],
+    ["oa-nonblocking-all-p3r1f_", "oa-nonblocking-all-p3r1_", "oa-nonblocking-all-p2r1f_", "oa-nonblocking-all-p2r1_"],
+    ["oa-nonblocking-all-e2-p3r1_", "oa-nonblocking-all-e2-p3r1f_", "oa-nonblocking-all-e2-p2r1_", "oa-nonblocking-all-e2-p2r1f_"],
 ]
 
 configs_groups_names = [
@@ -136,10 +136,11 @@ def plot(path_list, figurePath, ylabel):
     data = data.set_index("App")
     print(data)
     print(data.columns)
+    data.to_csv("data_1.csv")
     data = figurePlotter.merge_columns(data, configs_groups, configs_groups_names)
-    data = figurePlotter.exclude_and_sort_data(data, row_dict=apps_dict2, column_dict=configs_dict)
+    data = figurePlotter.exclude_and_sort_data(data, row_dict=apps_dict, column_dict=configs_dict)
     print("Processed data:\n", data)
-    data = figurePlotter.rename_data(data, row_dict=apps_dict2, column_dict=configs_dict)
+    data = figurePlotter.rename_data(data, row_dict=apps_dict, column_dict=configs_dict)
     print("Processed data:\n", data)
     data = normalize_data(data, "BAP")
     print("Normalized data:\n", data)
@@ -166,7 +167,7 @@ def plot(path_list, figurePath, ylabel):
         apps_labels,
         configs_labels,
         data.values,
-        plotSize=(15, 2.2),
+        plotSize=(5 * 2.5, 1* 2.5),
         filename=figurePath,
         groupsInterval=0.15,
         colorPalette=colorPalette,
@@ -191,7 +192,7 @@ def plot(path_list, figurePath, ylabel):
         },
         legendConfig={
             "position": "lower center",
-            "positionOffset": (0.45, 1),
+            "positionOffset": (0.45, 1.05),
             "col": 10,
             "legend.columnspacing": 1,
             "legend.handlelength": 2,
