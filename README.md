@@ -99,7 +99,7 @@ pip install https://github.com/getianao/figurePlotter/archive/refs/tags/v0.23.9.
 To build GPU executables, run the following commands:
 
 ```bash
-cd ${NGAP_ROOT}/code/scripts && ln -s ./configs-v100 config && cd -
+cd ${NGAP_ROOT}/code/scripts && ln -s ./configs-v100 configs && cd -
 
 cd ${NGAP_ROOT}/code && mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..

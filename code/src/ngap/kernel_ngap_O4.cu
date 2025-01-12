@@ -380,7 +380,7 @@ advanceAndFilterNonBlockingR2Groups(NonBlockingBuffer nblb,
             if (node_attrs[rneighbor] & 0b10)
               addResult2(rneighbor, riter + 1, d_results_v, d_results_i,
                          results_size, nblb.results_capacity, nblb.report_off);
-            if (__popc(__activemask()) <= nblb.active_threshold) {
+            if (1) {
               addToBufferSimple(rneighbor, riter + 1, d_buffer, d_buffer_idx,
                                 *d_buffer_start, d_buffer_end_tmp,
                                 buffer_capacity_per_block);
@@ -392,7 +392,7 @@ advanceAndFilterNonBlockingR2Groups(NonBlockingBuffer nblb,
           if (node_attrs[rneighbor] & 0b10)
             addResult2(rneighbor, riter + 1, d_results_v, d_results_i,
                        results_size, nblb.results_capacity, nblb.report_off);
-          if (__popc(__activemask()) <= nblb.active_threshold) {
+          if (1) {
             addToBufferSimple(rneighbor, riter + 1, d_buffer, d_buffer_idx,
                               *d_buffer_start, d_buffer_end_tmp,
                               buffer_capacity_per_block);
