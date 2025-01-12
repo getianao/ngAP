@@ -75,6 +75,11 @@ ngap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/RandomF
 Snort': best 82.974197 85.986198 -> 109.9
 ngap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Snort/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Snort/benchmarks/inputs/wrccdc2012.pcap --app-name=smallSnort --algorithm=nonblockingalle2groups --input-start-pos=0 --input-len=1000000 --split-entire-inputstream-to-chunk-size=1000000 --group-num=1 --duplicate-input-stream=600 --unique=true --unique-frequency=10 --use-soa=false --result-capacity=54619400 --use-uvm=false --data-buffer-fetch-size=25600 --add-aan-start=256000 --add-aas-interval=256000 --active-threshold=0 --precompute-cutoff=-1 --precompute-depth=3 --compress-prec-table=true --pc-use-uvm=false --report-off=false --remove-degree=true --quit-degree=false --max-nfa-size=-1 --adaptive-aas=false --use-unique-matchset=true --remove-loop-edge=true --loop-state-prefetch=false --quick-validation=128259 --validation=false 
 
+
+Snort: best 107.8 -> 
+ngap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Snort/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/Snort/benchmarks/inputs/wrccdc2012.pcap --app-name=Snort --algorithm=nonblockingalle2groups --input-start-pos=0 --input-len=1000000 --split-entire-inputstream-to-chunk-size=1000000 --group-num=1 --duplicate-input-stream=600 --unique=true --unique-frequency=10 --use-soa=false --result-capacity=54619400 --use-uvm=false --data-buffer-fetch-size=25600 --add-aan-start=256000 --add-aas-interval=256000 --active-threshold=0 --precompute-cutoff=-1 --precompute-depth=3 --compress-prec-table=true --pc-use-uvm=false --report-off=false --remove-degree=false --quit-degree=false --max-nfa-size=-1 --adaptive-aas=false --use-unique-matchset=true --remove-loop-edge=true --loop-state-prefetch=false --quick-validation=128259 --validation=false 
+
+
 CAV: 
 AsyncAP: 103.019638 -> 6.169483
 asyncap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/inputs/clamav.input --app-name=ClamAV --algorithm=runahead --input-len=1000000 --report-off=true --duplicate-input-stream=600 --one-output-capacity=10461940 --scanning-R=999999999 --block-size=128 --record-ir=0 --blockDimX=-1 --num-streams=4 --merge-cc=4 --shrmem-wl=1 --shr_wl_len=4 --remove-degree=false --quit-degree=false --quick-validation=1 --validation=false 
@@ -87,9 +92,21 @@ best: 7.647210 -> 9.41817
 ngap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/APPRNG/benchmarks/4_sided/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/APPRNG/benchmarks/4_sided/inputs/10MB_A.prng --app-name=APPRNG4 --algorithm=nonblockingallgroups --input-start-pos=0 --input-len=1000000 --split-entire-inputstream-to-chunk-size=1000000 --group-num=1 --duplicate-input-stream=600 --unique=false --unique-frequency=10 --use-soa=false --result-capacity=54619400 --use-uvm=false --data-buffer-fetch-size=512 --add-aan-start=1024 --add-aas-interval=4096 --active-threshold=8 --precompute-cutoff=-1 --precompute-depth=3 --compress-prec-table=true --pc-use-uvm=false --report-off=false --remove-degree=false --quit-degree=false --max-nfa-size=-1 --quick-validation=500000000 --validation=true 
 
 
+v100: 
+ngap -a /root/automata_benchmark_original/AutomataZoo/CRISPR/benchmarks/CasOFFinder/anml_remove_or/automata_0.anml -i /root/automata_benchmark_original/AutomataZoo/CRISPR/benchmarks/CasOFFinder/inputs/10MB_G.dna --app-name=CRISPR_CasOFFinder --algorithm=nonblockingalle2groups --input-start-pos=0 --input-len=1000000 --split-entire-inputstream-to-chunk-size=1000000 --group-num=1 --duplicate-input-stream=600 --unique=false --unique-frequency=10 --use-soa=false --result-capacity=54619400 --use-uvm=false --data-buffer-fetch-size=512 --add-aan-start=256 --add-aas-interval=256 --active-threshold=8 --precompute-cutoff=-1 --precompute-depth=3 --compress-prec-table=true --pc-use-uvm=false --report-off=false --remove-degree=false --quit-degree=false --max-nfa-size=-1 --use-unique-matchset=true --remove-loop-edge=true --loop-state-prefetch=false --quick-validation=62 --validation=true 
+ngap -a /root/automata_benchmark_original/AutomataZoo/CRISPR/benchmarks/CasOFFinder/anml_remove_or/automata_0.anml -i /root/automata_benchmark_original/AutomataZoo/CRISPR/benchmarks/CasOFFinder/inputs/10MB_G.dna --app-name=CRISPR_CasOFFinder --algorithm=nonblockingallgroups --input-start-pos=0 --input-len=1000000 --split-entire-inputstream-to-chunk-size=1000000 --group-num=1 --duplicate-input-stream=600 --unique=false --unique-frequency=10 --use-soa=false --result-capacity=54619400 --use-uvm=false --data-buffer-fetch-size=512 --add-aan-start=256 --add-aas-interval=256 --active-threshold=8 --precompute-cutoff=-1 --precompute-depth=3 --compress-prec-table=true --pc-use-uvm=false --report-off=false --remove-degree=false --quit-degree=false --max-nfa-size=-1  --quick-validation=62 --validation=true 
+
 ### Latency
 CAV: 0.163623 -> 1.444538
 asyncap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/inputs/clamav.input --app-name=ClamAV --algorithm=runahead --input-len=1000000 --report-off=true --duplicate-input-stream=1 --one-output-capacity=10461940 --scanning-R=999999999 --block-size=128 --record-ir=0 --blockDimX=-1 --num-streams=4 --merge-cc=4 --shrmem-wl=1 --shr_wl_len=4 --remove-degree=false --quit-degree=false --quick-validation=1 --validation=false 
 
 CAV': 0.166491 -> 1.492108
 asyncap -a /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/anml_remove_or/automata_0.anml -i /home/tge/workspace/ngAP/automata_benchmark_original/AutomataZoo/ClamAV/benchmarks/inputs/clamav.input --app-name=smallClamAV --algorithm=runahead --input-len=1000000 --report-off=true --duplicate-input-stream=1 --one-output-capacity=10461940 --scanning-R=999999999 --block-size=128 --record-ir=0 --blockDimX=-1 --num-streams=4 --merge-cc=4 --shrmem-wl=1 --shr_wl_len=4 --remove-degree=true --quit-degree=false --quick-validation=1 --validation=false 
+
+
+
+
+## motivation
+
+python ${NGAP_ROOT}/scripts/plot_motivation_e1.py
+python ${NGAP_ROOT}/scripts/plot_motivation_e2.py

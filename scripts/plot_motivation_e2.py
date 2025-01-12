@@ -11,8 +11,8 @@ import figurePlotter.data_processing as dp
 
 
 configs_dict = {
-    "self_loop_edge_perc": ["self edge", 1],
-    "sequence_node_perc": ["sequential edge", 2],
+    "self_loop_edge_perc": ["self-edge", 1],
+    "sequence_node_perc": ["sequence-edge", 2],
     "all": ["other", 3],
 }
 
@@ -149,5 +149,5 @@ if __name__ == "__main__":
     plot(
         path_list=paths,
         figurePath=result_folder+"motivation_e2.pdf",
-        ylabel="Edge Categories (%)",
+        ylabel="% of Edges",
     )
