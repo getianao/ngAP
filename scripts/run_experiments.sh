@@ -24,14 +24,14 @@ APP_SPEC=$1
 EXEC_CONFIG=$2
 
 
-python ../../code/scripts/launch_exps.py -b ${APP_SPEC} -f ${EXEC_CONFIG} -e --clean ${@:3}
+python -u ../../code/scripts/launch_exps.py -b ${APP_SPEC} -f ${EXEC_CONFIG} -e --clean ${@:3}
 
 echo "Experiments finished. "
 
 
 if [ $? -eq 0 ]; then
     echo "Collecting experiment raw data."
-    python ../../code/scripts/collect_results.py -b ${APP_SPEC} -f ${EXEC_CONFIG} ${@:3}
+    python -u ../../code/scripts/collect_results.py -b ${APP_SPEC} -f ${EXEC_CONFIG} ${@:3}
 else
     echo "Experiments terminate abnormally. "
     exit 1

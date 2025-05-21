@@ -22,6 +22,7 @@ configs_dict = {
     "before-hotstart-nt_": ["GPU-NFA", 10],
     "before-hotstart-ntmac_": ["HotStart-Mac", -7],
     "before-hyperscan_": ["HyperScan", 1.5],
+    "before-hyperscan-12": ["HyperScan-12", 1.6],
     "before-runahead-cc4_": ["AsyncAP", 9],
     
     # NAP

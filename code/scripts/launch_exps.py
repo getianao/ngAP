@@ -14,6 +14,8 @@ import time
 import pynvml
 import psutil
 
+from group_nfa import group_anml
+
 
 # exclude_apps = ["Hamming_N1000_l22_d5", "Hamming_N1000_l31_d10",
 #                 "Levenshtein_l24d5", "Levenshtein_l37d10"]
@@ -139,6 +141,8 @@ class Config:
             for tup in self.cfg['exp_parameters'][cfg_name]:
                 if not (len(tup) >= 3 and tup[2] == 'nocombination'):
                     cmd_str_template += ' -%s RUOZHIRUOZHI ' % tup[0]
+            if isinstance(anml, list):
+                anml = ' '.join(anml)
             cmd_str_template += '%s %s ' % (anml, input_file) 
             cmd_str_template += "-v %s " % quick_validation 
         elif isVASim:
@@ -210,7 +214,7 @@ class Config:
     #         return "false"
     #     return "false"
 
-    def get_automata_file_path_for_app(self, app, isHS=False):
+    def get_automata_file_path_for_app(self, app, isHS=False, grour_nfa=0):
         if self.benchmark_rootpath != None:
             anml_file_dir  = os.path.join(self.benchmark_rootpath, app, 'anml')
             anml_file      = llcommons.get_anml(anml_file_dir)
@@ -219,6 +223,29 @@ class Config:
             for a in self.benchmark_desc_obj['apps']:
                 if a['name'] == app:
                     if isHS:
+                        if grour_nfa > 0:
+                            print(f"gronp_anmls app={app}")
+                            anml_file = os.path.join(self.benchmark_desc_obj['root'], a['automata'])
+                            gronp_anmls = group_anml(anml_file, f"/home/tge/workspace/ngap2/dataset_group_nfa/12/{app}", grour_nfa)
+                            hs_paths = []
+                            
+                            for anml_path in gronp_anmls:
+                                hs_path = os.path.splitext(anml_path)[0] + ".hs"
+                                mnrl_cmd1 = f"/home/tge/workspace/automata-compiler/VASim/vasim --mnrl {anml_path}"
+                                hs_cmd1 = f"hscompile ./automata_0.mnrl {hs_path}"
+                                rm_cmd = f"rm -f ./automata_0.mnrl"
+                                print(hs_path)
+                                # if os.path.exists(hs_path):
+                                #     hs_paths.append(hs_path) 
+                                #     continue
+                                print(mnrl_cmd1)
+                                print(hs_cmd1)
+                                with open(os.devnull, 'w') as devnull:
+                                    subprocess.run(mnrl_cmd1, check=True, shell=True, stdout=devnull, stderr=devnull)
+                                    subprocess.run(hs_cmd1, check=True, shell=True, stdout=devnull, stderr=devnull)
+                                    subprocess.run(rm_cmd, check=True, shell=True, stdout=devnull, stderr=devnull)
+                                hs_paths.append(hs_path)      
+                            return hs_paths
                         if "hs" in a:
                             return os.path.join(self.benchmark_desc_obj['root'], a['hs'])
                         else:
@@ -259,16 +286,18 @@ class Config:
                     return []
                 else:
                     break
-
+        group_nfa = 0
         for tup in self.cfg['exp_parameters'][cfg_name]:
             if(len(tup) >= 5 and tup[3] == 'specific-app-option' and app in tup[4]):
                 list_of_list.append(tup[2])
             elif not (len(tup) >= 3 and tup[2] == 'nocombination'):
                 # normal parameter
                 list_of_list.append(tup[1])
+            if isHS and tup[0] == 'group_nfa':
+                group_nfa = int(tup[1])
 
         input_file = self.get_input_file_path_for_app(app)
-        anml_file  = self.get_automata_file_path_for_app(app, isHS)
+        anml_file  = self.get_automata_file_path_for_app(app, isHS, group_nfa)
         quick_validation = self.get_quick_validation_for_app(app)
         if "error" in anml_file:
             return []

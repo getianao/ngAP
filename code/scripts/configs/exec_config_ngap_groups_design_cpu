@@ -3,10 +3,17 @@
         "before-hyperscan" : [
             ("exec", 'hsrun', 'nocombination'),
             ("output-name", "before-hyperscan_", 'nocombination'),
-            ("t", ["12"]),
+            ("t", ["1"]),
             ("i", ["1000000"]),
             ("d", ["600"]),
         ],
+        # "before-hyperscan-12" : [
+            #     ("exec", 'hsrun', 'nocombination'),
+            #     ("output-name", "before-hyperscan-12_", 'nocombination'),
+            #     ("t", ["12"]),
+            #     ("i", ["1000000"]),
+            #     ("d", ["600"]),
+            # ],
     },
     "exp_times"    : 1,
     "out_prefix"   : "output",

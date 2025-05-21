@@ -15,3 +15,4 @@ automata_benchmark_original/*
 automata_benchmark.tar.gz
 code/src/asyncap/bin/*
 code/build_debug/*
+dataset_group_nfa/*
