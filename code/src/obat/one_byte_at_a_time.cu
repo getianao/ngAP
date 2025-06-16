@@ -23,6 +23,7 @@
 #include <cuda.h>
 #include "commons/validate.h"
 #include <execution>
+#include <nvml.h>
 
 using std::make_pair;
 
@@ -1092,6 +1093,30 @@ void one_byte_at_a_time::hotstart_ea() {
     cout << "shared_memory_size_KB = " << std::fixed << smemsize * 1.0 / 1024.0 << endl;
 
     cudaDeviceSynchronize();
+    int cuda_device = 0;
+    nvmlReturn_t result = nvmlInit();
+    nvmlDevice_t device;
+    cudaSetDevice(cuda_device);
+    result = nvmlDeviceGetHandleByIndex(cuda_device, &device);
+    if (NVML_SUCCESS != result) {
+      printf("Failed to get handle for device %i: %s\n", cuda_device,
+             nvmlErrorString(result));
+    }
+
+    
+    if (NVML_SUCCESS != result) {
+      printf("failed to initialize NVML: %s\n", nvmlErrorString(result));
+      exit(-1);
+    }
+
+
+    unsigned long long energy_before = 0;
+    result = nvmlDeviceGetTotalEnergyConsumption(device, &energy_before);
+    if (NVML_SUCCESS != result) {
+      printf("failed to get energy consumption: %s\n", nvmlErrorString(result));
+      exit(-1);
+    }
+
 
     cudaEvent_t start, stop;
     float elapsedTime;
@@ -1143,7 +1168,25 @@ void one_byte_at_a_time::hotstart_ea() {
     cudaEventSynchronize(stop);
 
     cudaEventElapsedTime(&elapsedTime, start, stop);
+
+
     printf("Elapsed time : %f ms\n" ,elapsedTime);
+    unsigned long long energy_after = 0;
+    result = nvmlDeviceGetTotalEnergyConsumption(device, &energy_after);
+    if (NVML_SUCCESS != result) {
+      printf("failed to read energy: %s\n", nvmlErrorString(result));
+      exit(-1);
+    }
+    double total_energy = (energy_after - energy_before) / 1000.0;
+    printf("Power: %f J\n", total_energy);
+    // watts
+    double watts = total_energy * 1000 / elapsedTime;
+    printf("Watts: %f W\n", watts);
+    // MB/J
+    double power_efficiency =
+        (symbol_streams[0].get_length() * symbol_streams.size()) /
+        (total_energy * 1000000.0);
+    printf("Power_Efficiency: %f MB/j\n", power_efficiency);
 
     float sec = elapsedTime / 1000.0;
     cout << "throughput = " << std::fixed << (symbol_streams[0].get_length() * symbol_streams.size()) / 1000000.0  / sec  << endl;

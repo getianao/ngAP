@@ -51,7 +51,7 @@ SET(PROJ "obat")
 file(GLOB_RECURSE SOURCES2 RELATIVE ${CMAKE_SOURCE_DIR} "src/${PROJ}/*")
 cuda_add_executable(${PROJ} ${SOURCES2})
 set_property(TARGET ${PROJ} PROPERTY CUDA_STANDARD 11)
-target_link_libraries(${PROJ} gpunfacommons gpunfautils)
+target_link_libraries(${PROJ} gpunfacommons gpunfautils nvidia-ml)
 target_include_directories(${PROJ} PRIVATE include/commons;include/gpunfautils)
 
 # # infant
@@ -64,7 +64,7 @@ target_include_directories(${PROJ} PRIVATE include/commons;include/gpunfautils)
 file(GLOB_RECURSE SOURCES_PPOPP RELATIVE ${CMAKE_SOURCE_DIR} "src/ppopp12/*")
 cuda_add_executable(ppopp12 ${SOURCES_PPOPP})
 set_property(TARGET ppopp12 PROPERTY CUDA_STANDARD 11)
-target_link_libraries(ppopp12 gpunfacommons gpunfautils)
+target_link_libraries(ppopp12 gpunfacommons gpunfautils nvidia-ml)
 target_include_directories(ppopp12 PRIVATE include/commons;include/gpunfautils)
 
 
@@ -86,7 +86,7 @@ endif()
 file(GLOB_RECURSE SOURCES_PPOPP RELATIVE ${CMAKE_SOURCE_DIR} "src/ngap/*")
 cuda_add_executable(ngap ${SOURCES_PPOPP})
 set_property(TARGET ngap PROPERTY CUDA_STANDARD 11)
-target_link_libraries(ngap gpunfacommons gpunfautils)
+target_link_libraries(ngap gpunfacommons gpunfautils nvidia-ml)
 target_include_directories(ngap PRIVATE include/commons;include/gpunfautils)
 
 # asyncap

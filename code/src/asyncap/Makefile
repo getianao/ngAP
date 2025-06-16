@@ -19,7 +19,7 @@ NVCCFLAGS+= $(CUDA_INCLUDE) -O3 -D_FORCE_INLINES -arch ${SM}  --default-stream p
 objects := obj/run_ahead_approach.o obj/main.o
 libs_objects = obj/run_ahead_approach.o
 
-LDFLAGS= -L../../build/lib -lgpunfacommons -lgpunfautils -lpthread -ltbb
+LDFLAGS= -L../../build/lib -lgpunfacommons -lgpunfautils -lpthread -ltbb -lnvidia-ml
 
 
 all: directories bin/asyncap

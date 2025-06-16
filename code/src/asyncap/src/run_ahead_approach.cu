@@ -28,6 +28,7 @@
 #include "nfa_utils.h"
 #include "report_formatter.h"
 #include <unordered_map>
+#include <nvml.h>
 
 #include <numeric>
 
@@ -608,6 +609,30 @@ void run_ahead_alg::launch_kernel() {
   cout << "num_execution_group = " << num_execution_group << endl;
   cudaEvent_t start, stop;
   float elapsedTime;
+  int cuda_device = 0;
+  nvmlReturn_t result = nvmlInit();
+  nvmlDevice_t device;
+  cudaSetDevice(cuda_device);
+  result = nvmlDeviceGetHandleByIndex(cuda_device, &device);
+  if (NVML_SUCCESS != result) {
+    printf("Failed to get handle for device %i: %s\n", cuda_device,
+           nvmlErrorString(result));
+  }
+
+  
+  if (NVML_SUCCESS != result) {
+    printf("failed to initialize NVML: %s\n", nvmlErrorString(result));
+    exit(-1);
+  }
+
+
+  unsigned long long energy_before = 0;
+  result = nvmlDeviceGetTotalEnergyConsumption(device, &energy_before);
+  if (NVML_SUCCESS != result) {
+    printf("failed to get energy consumption: %s\n", nvmlErrorString(result));
+    exit(-1);
+  }
+  
 
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -634,6 +659,24 @@ void run_ahead_alg::launch_kernel() {
   printf("Elapsed time : %f ms\n", elapsedTime);
   duration<double, std::milli> ms_double = t2 - t1;
   std::cout << "cpu_time_double = " << ms_double.count() << "ms" << endl;
+
+
+  unsigned long long energy_after = 0;
+  result = nvmlDeviceGetTotalEnergyConsumption(device, &energy_after);
+  if (NVML_SUCCESS != result) {
+    printf("failed to read energy: %s\n", nvmlErrorString(result));
+    exit(-1);
+  }
+  double total_energy = (energy_after - energy_before) / 1000.0;
+  printf("Power: %f J\n", total_energy);
+  // watts
+  double watts = total_energy * 1000.0 / elapsedTime;
+  printf("Watts: %f W\n", watts);
+  // MB/J
+  double power_efficiency =
+      (symbol_streams[0].get_length() * symbol_streams.size()) /
+      (total_energy * 1000000.0);
+  printf("Power_Efficiency: %f MB/j\n", power_efficiency);
 
   float sec = elapsedTime / 1000.0;
   cout << "throughput = " << std::fixed

@@ -11,9 +11,11 @@
 #include "omp.h"
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <execution>
 #include <fstream>
 #include <iostream>
+#include <nvml.h>
 
 // #define DEBUG_AM
 bool compareResult(uint64_t r1, uint64_t r2) {
@@ -2781,6 +2783,31 @@ void ngap::launch_non_blocking_all_e2_groups() {
 
   auto startNonBlockAutomata = [&](bool &passValidation) -> double {
     cudaEvent_t start, stop;
+
+    int cuda_device = 0;
+    nvmlReturn_t result = nvmlInit();
+    nvmlDevice_t device;
+    cudaSetDevice(cuda_device);
+    result = nvmlDeviceGetHandleByIndex(cuda_device, &device);
+    if (NVML_SUCCESS != result) {
+      printf("Failed to get handle for device %i: %s\n", cuda_device,
+             nvmlErrorString(result));
+    }
+
+    
+    if (NVML_SUCCESS != result) {
+      printf("failed to initialize NVML: %s\n", nvmlErrorString(result));
+      exit(-1);
+    }
+
+
+    unsigned long long energy_before = 0;
+    result = nvmlDeviceGetTotalEnergyConsumption(device, &energy_before);
+    if (NVML_SUCCESS != result) {
+      printf("failed to get energy consumption: %s\n", nvmlErrorString(result));
+      exit(-1);
+    }
+
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
@@ -3041,6 +3068,23 @@ void ngap::launch_non_blocking_all_e2_groups() {
     cudaEventSynchronize(stop);
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, start, stop);
+
+    unsigned long long energy_after = 0;
+    result = nvmlDeviceGetTotalEnergyConsumption(device, &energy_after);
+    if (NVML_SUCCESS != result) {
+      printf("failed to read energy: %s\n", nvmlErrorString(result));
+      exit(-1);
+    }
+    double total_energy = (energy_after - energy_before) / 1000.0;
+    printf("Power: %f J\n", total_energy);
+    // watts
+    double watts = total_energy * 1000 / milliseconds;
+    printf("Watts: %f W\n", watts);
+    // MB/J
+    double power_efficiency = (double)input_stream->size() / (total_energy * 1000000);
+    printf("Power_Efficiency: %f MB/j\n", power_efficiency);
+
+    
     double throughput = (double)input_stream->size() / (milliseconds * 1000);
 
     uint *h_buffer_end = new uint[num_seg];

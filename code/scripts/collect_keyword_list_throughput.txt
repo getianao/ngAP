@@ -1,3 +1,6 @@
 [
    ('throughput', 'float'),
+   ('Power', 'float'),
+   ('Watts', 'float'),
+   ('Power_Efficiency', 'float'),
 ]

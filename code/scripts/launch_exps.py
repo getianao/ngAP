@@ -519,6 +519,31 @@ class Config:
                                         "Error: validation failed" + bcolors.ENDC, f"{toc - tic:0.1f} seconds", flush=True)
                                 else:
                                     if not isHS and not isVASim:
+                                        power = os.popen(
+                                            "grep -w \"Power\" ./%s |  awk \'{print $2}\'" % prog_output).read()[:-1]
+                                        if power.strip() != "":
+                                            print(bcolors.OKGREEN + exp_parameters_name, 
+                                                  f"Energy_consumption: {power} J" + bcolors.ENDC, flush=True)
+                                        else:
+                                            print(bcolors.WARNING + exp_parameters_name,
+                                                  "Error: failed to retrieve energy consumption" + bcolors.ENDC, flush=True)
+                                        Watts = os.popen(
+                                            "grep -w \"Watts\" ./%s |  awk \'{print $2}\'" % prog_output).read()[:-1]
+                                        if Watts.strip() != "":
+                                            print(bcolors.OKGREEN + exp_parameters_name, 
+                                                  f"Power: {Watts} W" + bcolors.ENDC, flush=True)
+                                        else:
+                                            print(bcolors.WARNING + exp_parameters_name,
+                                                  "Error: failed to retrieve power" + bcolors.ENDC, flush=True)
+                                        
+                                        power_efficiency = os.popen(
+                                            "grep -w \"Power_Efficiency\" ./%s |  awk \'{print $2}\'" % prog_output).read()[:-1]
+                                        if power_efficiency.strip() != "":
+                                            print(bcolors.OKGREEN + exp_parameters_name, 
+                                                  f"Power_Efficiency: {power_efficiency} MB/J" + bcolors.ENDC, flush=True)
+                                        else:
+                                            print(bcolors.WARNING + exp_parameters_name,
+                                                  "Error: failed to retrieve power efficiency" + bcolors.ENDC, flush=True)
                                         throughput = os.popen(
                                             "grep -w \"ngap elapsed time:\" ./%s |  awk \'{print $8}\'" % prog_output).read()[:-1]
                                         if throughput.strip() == "":
@@ -543,6 +568,32 @@ class Config:
                                     else:
                                         throughput = os.popen(
                                             "grep -w \"throughput\" ./%s |  awk \'{print $3}\'" % prog_output).read()[:-1]
+                                        power = os.popen(
+                                            "grep -w \"Power\" ./%s |  awk \'{print $2}\'" % prog_output).read()[:-1]
+                                        if power.strip() != "":
+                                            print(bcolors.OKGREEN + exp_parameters_name, 
+                                                  f"Energy_consumption: {power} J" + bcolors.ENDC, flush=True)
+                                        else:
+                                            print(bcolors.WARNING + exp_parameters_name,
+                                                  "Error: failed to retrieve energy consumption" + bcolors.ENDC, flush=True)
+                                        Watts = os.popen(
+                                            "grep -w \"Watts\" ./%s |  awk \'{print $2}\'" % prog_output).read()[:-1]
+                                        if Watts.strip() != "":
+                                            print(bcolors.OKGREEN + exp_parameters_name, 
+                                                  f"Power: {Watts} W" + bcolors.ENDC, flush=True)
+                                        else:
+                                            print(bcolors.WARNING + exp_parameters_name,
+                                                  "Error: failed to retrieve power" + bcolors.ENDC, flush=True)
+                                        
+                                        power_efficiency = os.popen(
+                                            "grep -w \"Power_Efficiency\" ./%s |  awk \'{print $2}\'" % prog_output).read()[:-1]
+                                        if power_efficiency.strip() != "":
+                                            print(bcolors.OKGREEN + exp_parameters_name, 
+                                                  f"Power_Efficiency: {power_efficiency} MB/J" + bcolors.ENDC, flush=True)
+                                            # MB/J = MB/s/W
+                                        else:
+                                            print(bcolors.WARNING + exp_parameters_name,
+                                                  "Error: failed to retrieve power efficiency" + bcolors.ENDC, flush=True)
                                         if throughput.strip() != "":    
                                             print(bcolors.OKGREEN + exp_parameters_name, "throughput:",
                                                 throughput, "MB/s, " + bcolors.ENDC, f"{toc - tic:0.1f} seconds", flush=True) 
