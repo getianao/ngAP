@@ -93,9 +93,13 @@ def merge_csv(path_list, save_path):
   for path in path_list:
     print(path)
     data_apps = pd.DataFrame()
-    csv_files = glob.glob(os.path.abspath(path)+'/*.{}'.format('csv'))
-    for file in csv_files:
-      df = pd.read_csv(file)
+    # csv_files = glob.glob(os.path.abspath(path)+'/*.{}'.format('csv'))
+    # csv_files = glob.glob(os.path.abspath(path) + '/*avgres_Power_Efficiency*.{}'.format('csv'))
+    for file in path:
+      csv_files = os.path.join(os.path.abspath(file), "avgres_Power_Efficiency.csv")
+      df = pd.read_csv(csv_files)
+      print(csv_files)
+      print(df)
       if df.empty:
         continue
       df = df.T
@@ -133,7 +137,7 @@ def merge_csv(path_list, save_path):
   data = data.replace(np.nan, -3)
 
   print("Processed data:\n", data)
-  data.to_csv(save_path, sep=',', index = True, float_format = '%.1f')
+  data.to_csv(save_path, sep=',', index = True, float_format = '%.3f')
   
   df2 = pd.read_csv(save_path)
   df2 = df2.replace(-3, "U")
@@ -202,15 +206,18 @@ class LatexPrinter:
 if __name__ == "__main__":
     os.chdir(os.path.split(os.path.realpath(__file__))[0])
     # result_folder = "../ref_results/"
-    result_folder = "../results/"
-    # path1 = result_folder+"raw/throughput_gpu_nap_best"
-    path1 = result_folder+"/raw/throughput_gpu_nap_best_e2"
-
-    path2 = result_folder+"raw/throughput_gpu_sota_best"
-    path3 = result_folder+"raw/throughput_gpu_runahead"
-    path4 = result_folder+"raw/throughput_cpu"
-    # path5 = result_folder+"/raw/throughput_gpu_nap_default_adp"
-    path5 = result_folder+"/raw/throughput_gpu_nap_default_adp_e2"
+    result_folder = "../results/raw/power/raw/"
+    path1 = [result_folder + "gpu_baseline_app1"]
+    path2 = [
+        result_folder + "gpu_baseline_asyncap_app1",
+        result_folder + "gpu_baseline_asyncap_app3",
+    ]
+    path3 = [result_folder + "gpu_ngap_best_app1", result_folder + "gpu_ngap_best_app3"]
+    path4 = [
+        result_folder + "gpu_ngap_default_app1",
+        result_folder + "gpu_ngap_default_app3",
+    ]
+    path5 = [result_folder + "hs_app1", result_folder + "hs_app3"]
 
     paths = []
     paths.append(path1)
@@ -219,7 +226,7 @@ if __name__ == "__main__":
     paths.append(path4)
     paths.append(path5)
 
-    save_path = result_folder+"/tab4_throughput_o4.csv"
+    save_path = result_folder+"/tab_power.csv"
     df = merge_csv(paths, save_path)
     print(df)
     lp = LatexPrinter(df)

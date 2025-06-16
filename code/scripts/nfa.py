@@ -104,7 +104,10 @@ class NFA:
                     start_string = "none"
                 f.write(f'    <state-transition-element id="{state.name}" symbol-set="{symbol_set}" start="{start_string}">\n')
                 if state.is_report():
-                    f.write(f'      <report-on-match reportcode="{state.report_code}"/>\n')
+                    if state.report_code is None or state.report_code == "None":
+                        f.write('      <report-on-match/>\n')
+                    else:
+                        f.write(f'      <report-on-match reportcode="{state.report_code}"/>\n')
                 for neighbor in state.neighbors:
                     f.write(f'      <activate-on-match element="{self.states[neighbor].name}"/>\n')
                 f.write("    </state-transition-element>\n")
