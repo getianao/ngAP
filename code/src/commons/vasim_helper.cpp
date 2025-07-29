@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <bitset>
+#include <cstdint>
 
 
 using std::cout;

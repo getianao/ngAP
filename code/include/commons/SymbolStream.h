@@ -12,6 +12,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <cstdint>
 
 using std::string;
 using std::set;
